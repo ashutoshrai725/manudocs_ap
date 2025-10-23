@@ -8,6 +8,7 @@ import DocumentUploadPage from './components/Upload/DocumentUploadPage.jsx';
 import AIAgentPage from './components/AIAgent/AIAgentPage.jsx';
 import AIAgent2Page from './components/AIAgent/AIAgent2Page.jsx';
 import LoadingSpinner from './components/common/LoadingSpinner.jsx'; // You can create this component
+import ExportReadinessIndex from './components/ExportReadinessIndex';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || import.meta.env.REACT_APP_SUPABASE_URL,
@@ -52,7 +53,7 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
-        
+
         if (session) {
           setUser(session.user);
         } else {
@@ -108,29 +109,29 @@ function App() {
       <div className="App">
         <Routes>
           {/* Landing Page - Accessible to all */}
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
               <LandingPage
                 user={user}
                 onLogout={handleLogout}
               />
-            } 
+            }
           />
 
           {/* Auth Page - Only accessible when not logged in */}
-          <Route 
-            path="/auth" 
+          <Route
+            path="/auth"
             element={
               <PublicRoute user={user}>
                 <AuthPage onUserAuth={handleUserAuth} />
               </PublicRoute>
-            } 
+            }
           />
 
           {/* Protected Routes - Only accessible when logged in */}
-          <Route 
-            path="/upload" 
+          <Route
+            path="/upload"
             element={
               <ProtectedRoute user={user}>
                 <DocumentUploadPage
@@ -138,11 +139,11 @@ function App() {
                   onLogout={handleLogout}
                 />
               </ProtectedRoute>
-            } 
+            }
           />
 
-          <Route 
-            path="/ai-agent" 
+          <Route
+            path="/ai-agent"
             element={
               <ProtectedRoute user={user}>
                 <AIAgentPage
@@ -150,22 +151,25 @@ function App() {
                   onLogout={handleLogout}
                 />
               </ProtectedRoute>
-            } 
+            }
           />
 
-          <Route 
-            path="/ai-agent-2" 
+          <Route
+            path="/ai-agent-2"
             element={
               <ProtectedRoute user={user}>
-                <AIAgent2Page 
+                <AIAgent2Page
                   user={user}
                   onPageChange={handlePageChange}
                   onLogout={handleLogout}
                   documentsUploaded={documentsUploaded}
                 />
               </ProtectedRoute>
-            } 
+            }
           />
+
+          <Route path="/export-readiness-index" element={<ExportReadinessIndex user={user} />} />
+
 
           {/* Catch all route - redirect to landing */}
           <Route path="*" element={<Navigate to="/" replace />} />
