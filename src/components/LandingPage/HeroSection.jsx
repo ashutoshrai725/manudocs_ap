@@ -304,6 +304,21 @@ const HeroSection = ({ isMobile, user }) => {
                             </span>
                         </motion.button>
 
+                        {/* New ERI Button */}
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => handleNavigation('/export-readiness-index', true)}
+                            className="group relative bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg overflow-hidden min-w-[140px]"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            <span className="relative flex flex-col items-center justify-center gap-0 text-sm">
+                                ERI
+                                <sub className="text-xs font-normal opacity-90">Export Readiness Index</sub>
+                            </span>
+                        </motion.button>
+
+
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
