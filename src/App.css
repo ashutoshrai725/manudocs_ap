@@ -1,0 +1,357 @@
+.App {
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+img,
+.App-logo {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  .App-header {
+    min-height: 80vh;
+    padding: 2rem;
+    font-size: 1.3rem;
+  }
+
+  .App-logo {
+    height: 30vmin;
+  }
+}
+
+/* Mobile (standard) */
+@media (max-width: 768px) {
+  .App-header {
+    min-height: 60vh;
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .App-logo {
+    height: 20vmin;
+  }
+
+  .App {
+    padding: 0;
+  }
+}
+
+/* Extra small devices (phones, <480px) */
+@media (max-width: 480px) {
+  .App-header {
+    min-height: 50vh;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .App-logo {
+    height: 18vmin;
+  }
+}
+
+/* ===== RESPONSIVE DESIGN FOR AI AGENT ===== */
+
+/* Mobile First - Base mobile styles */
+@media (max-width: 768px) {
+  .min-h-screen.bg-gray-50 {
+    padding: 0;
+  }
+
+  .pt-16.h-screen.flex {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .w-1\/2.bg-white.border-r.border-gray-200.flex.flex-col {
+    width: 100% !important;
+    height: 60vh;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .w-1\/2.bg-gray-100.flex.flex-col {
+    width: 100% !important;
+    height: 40vh;
+  }
+
+  .p-4.border-b.border-gray-200.bg-manu-green.text-white {
+    padding: 1rem !important;
+  }
+
+  .flex-1.p-4.overflow-y-auto.space-y-4 {
+    padding: 0.75rem !important;
+  }
+
+  .max-w-\[80\%\] {
+    max-width: 90% !important;
+  }
+
+  .grid.grid-cols-1.gap-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .p-4.border-t.border-gray-200 {
+    padding: 0.75rem !important;
+  }
+
+  .flex-1.p-4 {
+    padding: 0.75rem !important;
+    overflow-y: auto;
+  }
+
+  .flex.space-x-2.border-b.pb-2.mb-3 {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .flex.space-x-2.border-b.pb-2.mb-3 button {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .flex.gap-3.mb-3 {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+
+  .flex.gap-3.mb-3 button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Tablet Styles (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .w-1\/2.bg-white.border-r.border-gray-200.flex.flex-col {
+    width: 50% !important;
+  }
+
+  .w-1\/2.bg-gray-100.flex.flex-col {
+    width: 50% !important;
+  }
+
+  .max-w-\[80\%\] {
+    max-width: 85% !important;
+  }
+
+  .grid.grid-cols-1.gap-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Small Mobile Devices (480px and below) */
+@media (max-width: 480px) {
+  .pt-16.h-screen.flex {
+    padding-top: 4rem !important;
+  }
+
+  .p-4.border-b.border-gray-200.bg-manu-green.text-white {
+    padding: 0.75rem !important;
+  }
+
+  .w-10.h-10.bg-white.rounded-full {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  .whitespace-pre-wrap {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  input,
+  textarea,
+  button {
+    font-size: 16px !important;
+    /* Prevents iOS zoom */
+  }
+
+  label.flex.items-center.space-x-2.p-2.border.border-gray-200.rounded-lg {
+    padding: 0.75rem !important;
+  }
+
+  .border.rounded.bg-white.shadow-md.max-h-48.overflow-y-auto {
+    max-height: 200px !important;
+  }
+}
+
+/* Large Desktop Screens (1440px and above) */
+@media (min-width: 1440px) {
+  .w-1\/2.bg-white.border-r.border-gray-200.flex.flex-col {
+    width: 40% !important;
+  }
+
+  .w-1\/2.bg-gray-100.flex.flex-col {
+    width: 60% !important;
+  }
+}
+
+/* ===== UTILITY CLASSES FOR BETTER RESPONSIVENESS ===== */
+
+/* Hide elements on mobile */
+.mobile-hidden {
+  display: block;
+}
+
+.tablet-hidden {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .tablet-hidden {
+    display: none !important;
+  }
+}
+
+/* Touch-friendly improvements */
+button,
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevent horizontal scrolling */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Smooth scrolling for chat */
+.overflow-y-auto {
+  scroll-behavior: smooth;
+}
+
+/* Better document preview on mobile */
+@media (max-width: 768px) {
+  .document-html-preview {
+    transform: scale(0.8);
+    transform-origin: top left;
+    width: 125%;
+  }
+}
+
+/* Loading states for better UX */
+@media (max-width: 768px) {
+  .w-16.h-16.bg-green-500.rounded-full {
+    width: 3rem !important;
+    height: 3rem !important;
+  }
+}
+
+/* Product suggestion improvements */
+@media (max-width: 768px) {
+  .border.rounded.bg-white.shadow-md.max-h-48.overflow-y-auto {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 50vh !important;
+    z-index: 1000;
+  }
+}
+
+@media (max-width: 768px) {
+
+  /* Hide document preview */
+  .w-1\/2.bg-gray-100.flex.flex-col {
+    display: none !important;
+  }
+
+  /* Make chat panel full width */
+  .w-1\/2.bg-white.border-r.border-gray-200.flex.flex-col {
+    width: 100% !important;
+    /* Full width */
+    min-width: 0;
+    /* Remove min width constraints */
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    height: auto;
+    /* Adjust height as needed */
+    flex: none;
+    /* Override flex-grow and shrink if any */
+  }
+}
+
+
+/* Remove the previous mobile CSS and use this */
+@media (max-width: 768px) {
+  .border.rounded.bg-white.shadow-md.max-h-48.overflow-y-auto.z-10.mb-2 {
+    max-height: 100px !important;
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  /* Ensure input field has space */
+  input[type="text"] {
+    margin-top: 8px;
+  }
+}
+
+
+/*new mobile css*/
+
+@media (max-width: 768px) {
+  .flex-1.p-4.overflow-y-auto.space-y-4 {
+    padding-bottom: 300px !important;
+    /* Extra space for keyboard */
+  }
+
+  /* Ensure smooth scrolling on iOS */
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+    overflow-anchor: none;
+  }
+}
