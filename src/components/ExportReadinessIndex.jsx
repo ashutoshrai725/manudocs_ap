@@ -675,8 +675,8 @@ Visit: https://manudocs.com | Contact: support@manudocs.com
                                 {score}%
                             </motion.div>
                             <div className={`inline-block px-6 py-2 rounded-full text-lg font-semibold mb-4 ${scoreLevel.color === 'green' ? 'bg-manu-green/20 text-manu-green border-2 border-manu-green' :
-                                    scoreLevel.color === 'yellow' ? 'bg-yellow-500/20 text-yellow-500 border-2 border-yellow-500' :
-                                        'bg-red-500/20 text-red-500 border-2 border-red-500'
+                                scoreLevel.color === 'yellow' ? 'bg-yellow-500/20 text-yellow-500 border-2 border-yellow-500' :
+                                    'bg-red-500/20 text-red-500 border-2 border-red-500'
                                 }`}>
                                 {scoreLevel.level}
                             </div>
@@ -769,7 +769,7 @@ Visit: https://manudocs.com | Contact: support@manudocs.com
                                                 animate={{ width: `${catScore.percentage}%` }}
                                                 transition={{ delay: 0.5 + index * 0.1, duration: 0.8 }}
                                                 className={`h-2 rounded-full ${catScore.percentage >= 70 ? 'bg-manu-green' :
-                                                        catScore.percentage >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                                                    catScore.percentage >= 40 ? 'bg-yellow-500' : 'bg-red-500'
                                                     }`}
                                             />
                                         </div>
@@ -812,8 +812,8 @@ Visit: https://manudocs.com | Contact: support@manudocs.com
                                                         MANDATORY
                                                     </span>
                                                     <span className={`px-2 py-1 rounded text-xs font-semibold ${rec.priority === 'high' ? 'bg-red-500/20 text-red-400' :
-                                                            rec.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                                'bg-blue-500/20 text-blue-400'
+                                                        rec.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                            'bg-blue-500/20 text-blue-400'
                                                         }`}>
                                                         {rec.priority.toUpperCase()} PRIORITY
                                                     </span>
@@ -864,16 +864,16 @@ Visit: https://manudocs.com | Contact: support@manudocs.com
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.9 + index * 0.05 }}
                                         className={`bg-gray-700/50 rounded-xl p-6 border-l-4 ${rec.priority === 'high' ? 'border-yellow-500' :
-                                                rec.priority === 'medium' ? 'border-blue-500' :
-                                                    'border-gray-500'
+                                            rec.priority === 'medium' ? 'border-blue-500' :
+                                                'border-gray-500'
                                             }`}
                                     >
                                         <div className="flex items-start justify-between mb-2">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                                     <span className={`px-2 py-1 rounded text-xs font-semibold ${rec.priority === 'high' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                            rec.priority === 'medium' ? 'bg-blue-500/20 text-blue-400' :
-                                                                'bg-gray-500/20 text-gray-400'
+                                                        rec.priority === 'medium' ? 'bg-blue-500/20 text-blue-400' :
+                                                            'bg-gray-500/20 text-gray-400'
                                                         }`}>
                                                         {rec.priority.toUpperCase()} PRIORITY
                                                     </span>
@@ -957,8 +957,8 @@ Visit: https://manudocs.com | Contact: support@manudocs.com
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: index * 0.05 }}
                                 className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition-all ${isActive ? 'bg-manu-green text-white shadow-lg scale-105' :
-                                        isPast ? 'bg-gray-700 text-manu-green' :
-                                            'bg-gray-800 text-gray-400'
+                                    isPast ? 'bg-gray-700 text-manu-green' :
+                                        'bg-gray-800 text-gray-400'
                                     }`}
                             >
                                 <span>{cat.icon}</span>
@@ -1005,8 +1005,8 @@ Visit: https://manudocs.com | Contact: support@manudocs.com
                                             </span>
                                         )}
                                         <span className={`px-2 py-1 rounded text-xs font-semibold ${currentQuestion.priority === 'high' ? 'bg-red-500/20 text-red-400' :
-                                                currentQuestion.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                    'bg-blue-500/20 text-blue-400'
+                                            currentQuestion.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                'bg-blue-500/20 text-blue-400'
                                             }`}>
                                             {currentQuestion.priority.toUpperCase()} PRIORITY
                                         </span>
