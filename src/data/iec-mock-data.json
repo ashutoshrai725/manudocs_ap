@@ -1,0 +1,13 @@
+{
+  "demo": {
+    "companyName": "Demo Export Company",
+    "gstin": "29DEMO1234F1Z5",
+    "pan": "DEMO12345F",
+    "fullAddress": "123 Demo Street\nBangalore, Karnataka - 560001",
+    "adBankName": "State Bank of India",
+    "adBankBranch": "Bangalore Main",
+    "adCode": "0012345",
+    "email": "demo@export.com",
+    "phone": "+91-80-12345678"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "UAE": ["Commercial Invoice", "Packing List", "COO", "Bill of Lading"],
+  "USA": ["Commercial Invoice", "Packing List", "COO", "ISF Filing"],
+  "Germany": ["Commercial Invoice", "Packing List", "EUR.1", "Bill of Lading"]
+}

@@ -9,6 +9,8 @@ import AIAgentPage from './components/AIAgent/AIAgentPage.jsx';
 import AIAgent2Page from './components/AIAgent/AIAgent2Page.jsx';
 import LoadingSpinner from './components/common/LoadingSpinner.jsx'; // You can create this component
 import ExportReadinessIndex from './components/ExportReadinessIndex';
+import SmartDocGenerator from './components/SmartDocGenerator';
+
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || import.meta.env.REACT_APP_SUPABASE_URL,
@@ -169,7 +171,7 @@ function App() {
           />
 
           <Route path="/export-readiness-index" element={<ExportReadinessIndex user={user} />} />
-
+          <Route path="/smart-generate" element={<SmartDocGenerator />} /> 
 
           {/* Catch all route - redirect to landing */}
           <Route path="*" element={<Navigate to="/" replace />} />

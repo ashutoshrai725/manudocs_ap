@@ -322,7 +322,7 @@ const HeroSection = ({ isMobile, user }) => {
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => handleNavigation('/ai-agent', true)}
+                            onClick={() => handleNavigation('/smart-generate', true)}
                             className="group relative bg-white/10 backdrop-blur-md text-white px-6 py-3 rounded-xl font-semibold border border-white/20 hover:bg-white/20 transition-all duration-300 min-w-[140px]"
                         >
                             <span className="flex items-center justify-center gap-2 text-sm">

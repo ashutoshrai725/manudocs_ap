@@ -1,0 +1,83 @@
+{
+  "09": {
+    "category": "Spices & Coffee",
+    "description": "Coffee, tea, spices",
+    "requiredCerts": [
+      {
+        "name": "Phytosanitary Certificate",
+        "reason": "Required for all plant products",
+        "issuer": "Plant Quarantine, India",
+        "cost": "₹500-1000",
+        "processingTime": "2-3 days"
+      },
+      {
+        "name": "Fumigation Certificate",
+        "reason": "Pest-free certification",
+        "issuer": "Approved Fumigation Agency",
+        "cost": "₹1000-2000",
+        "processingTime": "1 day"
+      },
+      {
+        "name": "Health Certificate",
+        "reason": "Food safety compliance",
+        "issuer": "FSSAI",
+        "cost": "Free",
+        "processingTime": "1-2 days"
+      },
+      {
+        "name": "Spice Board Certificate",
+        "reason": "Quality certification for spices",
+        "issuer": "Spice Board of India",
+        "cost": "₹2000-5000",
+        "processingTime": "3-5 days"
+      }
+    ]
+  },
+  "52": {
+    "category": "Cotton Textiles",
+    "description": "Cotton yarn and fabrics",
+    "requiredCerts": [
+      {
+        "name": "Certificate of Analysis",
+        "reason": "Verify cotton quality parameters",
+        "issuer": "Textile Committee",
+        "cost": "₹1500",
+        "processingTime": "2 days"
+      },
+      {
+        "name": "Azo Dye Test Report",
+        "reason": "Required for EU/USA exports",
+        "issuer": "Approved Lab",
+        "cost": "₹3000",
+        "processingTime": "3-5 days"
+      }
+    ]
+  },
+  "03": {
+    "category": "Seafood",
+    "description": "Fish, shrimp, marine products",
+    "requiredCerts": [
+      {
+        "name": "Health Certificate",
+        "reason": "Food safety for marine products",
+        "issuer": "Export Inspection Council",
+        "cost": "₹2000",
+        "processingTime": "1-2 days"
+      },
+      {
+        "name": "Catch Certificate",
+        "reason": "Proof of legal fishing",
+        "issuer": "Fisheries Department",
+        "cost": "₹1000",
+        "processingTime": "1 day"
+      },
+      {
+        "name": "HACCP Certificate",
+        "reason": "Food safety management",
+        "issuer": "Export Inspection Agency",
+        "cost": "₹5000-10000",
+        "processingTime": "7-10 days"
+      }
+    ]
+  }
+}
