@@ -146,6 +146,19 @@ const Header = ({ user, onLogout }) => {
                                 <span>Upload Docs</span>
                             </button>
 
+                            <button
+                                onClick={() => handleNavigation('/duty-calculator', true)}
+                                className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 flex items-center space-x-2 ${isActiveRoute('/duty-calculator')
+                                    ? 'bg-green-500 text-gray-900 shadow-lg shadow-green-500/25'
+                                    : 'text-gray-300 hover:bg-gray-800 hover:text-green-400 hover:shadow-md'
+                                    }`}
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <span>Duty Calculator</span>
+                            </button>
+
 
 
 

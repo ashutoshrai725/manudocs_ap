@@ -1,0 +1,55 @@
+{
+  "duties": [
+    {
+      "hsn": "09041100",
+      "description": "Pepper, neither crushed nor ground",
+      "destinations": {
+        "UAE": {
+          "mfnRate": 5.0,
+          "ftaRate": 0.0,
+          "ftaName": "India-UAE CEPA",
+          "vatRate": 5.0,
+          "requiresCOO": true,
+          "notes": "Phytosanitary certificate required"
+        },
+        "USA": {
+          "mfnRate": 0.0,
+          "ftaRate": null,
+          "ftaName": null,
+          "vatRate": 0.0,
+          "requiresCOO": false,
+          "notes": "FDA prior notice required"
+        },
+        "UK": {
+          "mfnRate": 7.0,
+          "ftaRate": 0.0,
+          "ftaName": "UK-India FTA (Negotiating)",
+          "vatRate": 20.0,
+          "requiresCOO": true,
+          "notes": "Health certificate may be required"
+        }
+      }
+    },
+    {
+      "hsn": "52010000",
+      "description": "Cotton, not carded or combed",
+      "destinations": {
+        "UAE": {
+          "mfnRate": 0.0,
+          "ftaRate": 0.0,
+          "ftaName": "India-UAE CEPA",
+          "vatRate": 5.0,
+          "requiresCOO": false,
+          "notes": "Quality certificate required"
+        },
+        "USA": {
+          "mfnRate": 0.0,
+          "ftaRate": null,
+          "vataRate": 0.0,
+          "requiresCOO": false,
+          "notes": "Fumigation certificate required"
+        }
+      }
+    }
+  ]
+}
