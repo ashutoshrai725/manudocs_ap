@@ -12,7 +12,7 @@ import ExportReadinessIndex from './components/ExportReadinessIndex';
 import SmartDocGenerator from './components/SmartDocGenerator';
 import DutyCalculator from './components/DutyCalculator/DutyCalculator.jsx';
 
-
+import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || import.meta.env.REACT_APP_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.REACT_APP_SUPABASE_ANON_KEY
@@ -183,7 +183,10 @@ function App() {
 
           <Route path="/export-readiness-index" element={<ExportReadinessIndex user={user} />} />
           <Route path="/smart-generate" element={<SmartDocGenerator />} />
-
+          <Route
+            path="/analytics"
+            element={<AnalyticsDashboard user={user} onPageChange={handlePageChange} onLogout={handleLogout} />}
+          />
           {/* Catch all route - redirect to landing */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

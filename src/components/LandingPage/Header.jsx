@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut, Settings, HelpCircle, Phone, Mail, MessageCircle, ChevronDown, ExternalLink, Sun, Moon } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, HelpCircle, Phone, Mail, MessageCircle, ChevronDown, ExternalLink, BarChart3 } from 'lucide-react';
 
 const Header = ({ user, onLogout }) => {
     const navigate = useNavigate();
@@ -8,7 +8,6 @@ const Header = ({ user, onLogout }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [infoVisible, setInfoVisible] = useState(null);
-    const [darkMode, setDarkMode] = useState(true); // Default to dark mode
     const profileRef = useRef(null);
     const helpRef = useRef(null);
     const contactRef = useRef(null);
@@ -85,13 +84,9 @@ const Header = ({ user, onLogout }) => {
         e.target.style.display = 'none';
     };
 
-    const toggleDarkMode = () => {
-        setDarkMode(!darkMode);
-    };
-
     return (
         <>
-            <header className="fixed top-4 left-4 right-4 max-w-7xl mx-auto bg-blur-900/95 backdrop-blur-xl z-50 shadow-2xl rounded-2xl border border-gray-700/60 opacity-90">
+            <header className="fixed top-4 left-4 right-4 max-w-7xl mx-auto bg-gray-900/95 backdrop-blur-xl z-50 shadow-2xl rounded-2xl border border-gray-700/60 opacity-90">
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
 
@@ -113,8 +108,6 @@ const Header = ({ user, onLogout }) => {
                                 <div className="flex flex-col">
                                     <span className="text-2xl font-black bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent tracking-tight">
                                         ManuDocs
-                                    </span>
-                                    <span className="text-xs text-gray-400 font-medium -mt-1">
                                     </span>
                                 </div>
                             </button>
@@ -159,8 +152,17 @@ const Header = ({ user, onLogout }) => {
                                 <span>Duty Calculator</span>
                             </button>
 
-
-
+                            {/* Analytics Button - NEW! */}
+                            <button
+                                onClick={() => handleNavigation('/analytics', true)}
+                                className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 flex items-center space-x-2 ${isActiveRoute('/analytics')
+                                    ? 'bg-green-500 text-gray-900 shadow-lg shadow-green-500/25'
+                                    : 'text-gray-300 hover:bg-gray-800 hover:text-green-400 hover:shadow-md'
+                                    }`}
+                            >
+                                <BarChart3 size={16} />
+                                <span>Analytics</span>
+                            </button>
 
                             {/* Help Dropdown */}
                             <div className="relative" ref={helpRef}>
@@ -378,8 +380,26 @@ const Header = ({ user, onLogout }) => {
                                     Upload Documents
                                 </button>
 
+                                <button
+                                    onClick={() => handleNavigation('/duty-calculator', true)}
+                                    className={`block w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${isActiveRoute('/duty-calculator')
+                                        ? 'bg-green-500 text-gray-900 shadow-lg'
+                                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-green-400'
+                                        }`}
+                                >
+                                    Duty Calculator
+                                </button>
 
-
+                                {/* Analytics Button - Mobile - NEW! */}
+                                <button
+                                    onClick={() => handleNavigation('/analytics', true)}
+                                    className={`block w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${isActiveRoute('/analytics')
+                                        ? 'bg-green-500 text-gray-900 shadow-lg'
+                                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-green-400'
+                                        }`}
+                                >
+                                    Analytics Dashboard
+                                </button>
 
                                 <button
                                     onClick={() => setInfoVisible('contact')}
