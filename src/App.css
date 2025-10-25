@@ -355,3 +355,37 @@ body {
     overflow-anchor: none;
   }
 }
+
+
+/* PDF Optimization Styles */
+.pdf-template * {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.pdf-template table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.pdf-table th,
+.pdf-table td {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.page-break {
+  page-break-before: always;
+}
+
+.no-break {
+  page-break-inside: avoid;
+}
+
+@media print {
+  .pdf-template {
+    margin: 0;
+    padding: 15mm;
+    box-shadow: none;
+  }
+}

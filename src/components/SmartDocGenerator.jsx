@@ -21,6 +21,86 @@ import FDAPriorNotice from './templates/FDAPriorNotice';
 import EUR1Certificate from './templates/EUR1Certificate';
 import REXCertificate from './templates/REXCertificate';
 
+// Data for suggestions
+const SUGGESTED_IEC = "demo";
+const SUGGESTED_HSN = "09041100";
+
+const INDIAN_PORTS = [
+  "Nhava Sheva (JNPT), Mumbai",
+  "Mundra Port, Gujarat",
+  "Chennai Port, Tamil Nadu",
+  "Kolkata Port, West Bengal",
+  "Cochin Port, Kerala",
+  "Visakhapatnam Port, Andhra Pradesh",
+  "Kandla Port, Gujarat",
+  "Mumbai Port, Maharashtra",
+  "Tuticorin Port, Tamil Nadu",
+  "Paradip Port, Odisha",
+  "New Mangalore Port, Karnataka",
+  "Mormugao Port, Goa"
+];
+
+const UAE_PORTS = [
+  "Jebel Ali Port, Dubai",
+  "Port Rashid, Dubai",
+  "Khalifa Port, Abu Dhabi",
+  "Port Zayed, Abu Dhabi",
+  "Sharjah Port, Sharjah",
+  "Fujairah Port, Fujairah"
+];
+
+const USA_PORTS = [
+  "Port of Los Angeles, California",
+  "Port of Long Beach, California",
+  "Port of New York & New Jersey",
+  "Port of Savannah, Georgia",
+  "Port of Houston, Texas",
+  "Port of Seattle, Washington",
+  "Port of Oakland, California",
+  "Port of Charleston, South Carolina"
+];
+
+const GERMANY_PORTS = [
+  "Port of Hamburg",
+  "Port of Bremerhaven",
+  "Port of Wilhelmshaven",
+  "Port of Rostock",
+  "Port of Lübeck"
+];
+
+const DESIGNATIONS = [
+  "Owner",
+  "Manager",
+  "Director",
+  "Proprietor",
+  "Export Manager",
+  "Authorized Signatory"
+];
+
+const INDIAN_NAMES = [
+  "Rajesh Kumar",
+  "Priya Sharma",
+  "Amit Patel",
+  "Sneha Gupta",
+  "Vikram Singh",
+  "Anjali Mehta",
+  "Sanjay Verma",
+  "Pooja Reddy"
+];
+
+const INDIAN_CONTACTS = [
+  "export@company.com | +91-9876543210",
+  "sales@company.com | +91-9876543211",
+  "info@company.com | +91-9876543212",
+  "operations@company.com | +91-9876543213"
+];
+
+const BANK_DETAILS_SUGGESTIONS = [
+  "Bank of India, Main Branch Mumbai\nAccount: 12345678901\nIFSC: BKID0000123\nSWIFT: BKIDINBBMUM",
+  "State Bank of India, International Branch\nAccount: 98765432109\nIFSC: SBIN0000456\nSWIFT: SBININBB552",
+  "HDFC Bank, Corporate Branch\nAccount: 45678901234\nIFSC: HDFC0000789\nSWIFT: HDFCINBB"
+];
+
 function ExtendedSmartDocGenerator() {
   const [currentStep, setCurrentStep] = useState(1);
   const [iecNumber, setIecNumber] = useState('');
@@ -57,6 +137,12 @@ function ExtendedSmartDocGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // State for filtered suggestions
+  const [filteredIndianPorts, setFilteredIndianPorts] = useState([]);
+  const [filteredDestinationPorts, setFilteredDestinationPorts] = useState([]);
+  const [showIndianPorts, setShowIndianPorts] = useState(false);
+  const [showDestinationPorts, setShowDestinationPorts] = useState(false);
+
   // All possible questions needed for documents
   const allDocumentQuestions = [
     // Commercial Invoice Fields
@@ -80,10 +166,9 @@ function ExtendedSmartDocGenerator() {
     // Bill of Lading Fields
     { field: 'bill_of_lading_number', question: 'What is the Bill of Lading number?', type: 'text', required: true },
     { field: 'shippers_reference', question: 'Shipper\'s reference number?', type: 'text', required: false },
-    { field: 'carriers_reference', question: 'Carrier\'s reference number?', type: 'text', required: false },
     { field: 'notify_party', question: 'Notify party details (if different from consignee)?', type: 'textarea', required: false },
     { field: 'freight_terms', question: 'Freight terms?', type: 'select', options: ['Prepaid', 'Collect'], required: true },
-    { field: 'number_of_originals', question: 'Number of original Bills of Lading?', type: 'text', required: true },
+    { field: 'number_of_originals', question: 'Number of original Bills of Lading?', type: 'select', options: ['1', '2', '3', '4'], required: true },
 
     // Health Certificate Fields
     { field: 'health_certificate_number', question: 'Health certificate number?', type: 'text', required: false },
@@ -120,7 +205,7 @@ function ExtendedSmartDocGenerator() {
     { field: 'exporter_contact_person', question: 'Exporter contact person name?', type: 'text', required: true },
     { field: 'exporter_contact_info', question: 'Exporter contact phone/email?', type: 'text', required: true },
     { field: 'authorized_signatory_name', question: 'Authorized signatory name?', type: 'text', required: true },
-    { field: 'authorized_signatory_designation', question: 'Authorized signatory designation?', type: 'text', required: true }
+    { field: 'authorized_signatory_designation', question: 'Authorized signatory designation?', type: 'select', options: DESIGNATIONS, required: true }
   ];
 
   // Get only relevant questions based on selected documents
@@ -169,6 +254,115 @@ function ExtendedSmartDocGenerator() {
     );
   };
 
+  // Helper functions for suggestions
+  const getSuggestedBuyerDetails = () => {
+    const buyers = {
+      UAE: [
+        { name: "Al Maya Trading LLC", address: "P.O. Box 1234, Dubai, UAE", email: "purchase@almaya.ae", phone: "+971-4-1234567", reference: "AMT-PO-2024-001" },
+        { name: "Lulu International Group", address: "P.O. Box 5678, Abu Dhabi, UAE", email: "imports@lulu.ae", phone: "+971-2-7654321", reference: "LUL-IMP-2024-002" }
+      ],
+      USA: [
+        { name: "Global Imports Inc.", address: "123 Trade Street, New York, NY 10001, USA", email: "orders@globalimports.com", phone: "+1-212-555-7890", reference: "GI-PO-2024-US001" },
+        { name: "American Trading Corp", address: "456 Commerce Ave, Los Angeles, CA 90001, USA", email: "purchasing@americantrading.com", phone: "+1-213-555-1234", reference: "ATC-IMP-2024-003" }
+      ],
+      Germany: [
+        { name: "Euro Import GmbH", address: "Handelsstraße 123, 20457 Hamburg, Germany", email: "einkauf@euroimport.de", phone: "+49-40-12345678", reference: "EI-BEST-2024-004" },
+        { name: "German Trade Partners", address: "Importallee 456, 10115 Berlin, Germany", email: "orders@gtp.de", phone: "+49-30-98765432", reference: "GTP-PO-2024-005" }
+      ]
+    };
+    return buyers[destination] || [];
+  };
+
+  const getSuggestedProductDetails = () => {
+    const products = {
+      "09041100": [
+        { description: "Red Chili Powder", quantity: "1000", unit: "KG", price: "5.00", packaging: "20 bags x 50 KG each", net_weight: "1000", gross_weight: "1020", measurements: "1.2 x 1.0 x 0.8 m" },
+        { description: "Turmeric Powder", quantity: "500", unit: "KG", price: "8.50", packaging: "10 cartons x 50 KG each", net_weight: "500", gross_weight: "515", measurements: "1.0 x 0.8 x 0.6 m" }
+      ],
+      "52051100": [
+        { description: "Cotton Yarn", quantity: "2000", unit: "KG", price: "3.20", packaging: "40 bales x 50 KG each", net_weight: "2000", gross_weight: "2040", measurements: "2.5 x 1.5 x 1.2 m" }
+      ]
+    };
+    return products[hsnCode] || [];
+  };
+
+  // Generate smart suggestions based on context
+  const generateSmartSuggestion = (field, currentValue) => {
+    switch (field) {
+      case 'invoice_number':
+        return `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+
+      case 'invoice_date':
+        return new Date().toISOString().split('T')[0];
+
+      case 'buyer_reference':
+        return `${buyerDetails.name.substring(0, 3).toUpperCase()}-PO-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 100)).padStart(2, '0')}`;
+
+      case 'insurance_policy':
+        return `MC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+
+      case 'package_details':
+        if (productDetails.packaging) {
+          return `${productDetails.packaging}, Total ${productDetails.quantity} ${productDetails.unit}`;
+        }
+        return `${Math.ceil(productDetails.quantity / 50)} bags x 50 KG each, Total ${productDetails.quantity} KG`;
+
+      case 'net_weight_total':
+        return productDetails.net_weight || Math.round(productDetails.quantity * 1).toString();
+
+      case 'gross_weight_total':
+        return productDetails.gross_weight || Math.round(productDetails.quantity * 1.02).toString();
+
+      case 'measurements_total':
+        if (productDetails.measurements) return productDetails.measurements;
+        const packages = Math.ceil(productDetails.quantity / 50);
+        const volume = (packages * 0.1).toFixed(1);
+        return `${volume} m³ (${packages} packages)`;
+
+      case 'tariff_code':
+        return hsnCode;
+
+      case 'marks_numbers':
+        return `${buyerDetails.name.substring(0, 3).toUpperCase()}/${productDetails.description.substring(0, 3).toUpperCase()}/1-UP`;
+
+      case 'bill_of_lading_number':
+        return `MBL${new Date().getFullYear()}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+
+      case 'shippers_reference':
+        return `${companyData?.companyName?.substring(0, 3).toUpperCase() || 'EXP'}-SR-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 100)).padStart(2, '0')}`;
+
+      case 'notify_party':
+        return `Same as consignee - ${buyerDetails.name}`;
+
+      case 'health_certificate_number':
+        return `HC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+
+      case 'manufacturing_plant':
+        return companyData?.fullAddress || "Plot No. 123, Industrial Area, Mumbai, Maharashtra, India";
+
+      case 'product_batch_number':
+        return `BATCH-${new Date().getMonth() + 1}${new Date().getFullYear().toString().slice(-2)}-${String(Math.floor(Math.random() * 100)).padStart(2, '0')}`;
+
+      case 'halal_certificate_number':
+        return `HALAL-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+
+      case 'vessel_flight_details':
+        return `MAERSK HONGFKONG V.234${Math.floor(Math.random() * 10)}`;
+
+      case 'bank_details':
+        return BANK_DETAILS_SUGGESTIONS[Math.floor(Math.random() * BANK_DETAILS_SUGGESTIONS.length)];
+
+      case 'exporter_contact_person':
+        return INDIAN_NAMES[Math.floor(Math.random() * INDIAN_NAMES.length)];
+
+      case 'exporter_contact_info':
+        return INDIAN_CONTACTS[Math.floor(Math.random() * INDIAN_CONTACTS.length)];
+
+      default:
+        return currentValue || '';
+    }
+  };
+
   // Helper function to get template component
   const getTemplateComponent = (templateId) => {
     const templateMap = {
@@ -203,31 +397,55 @@ ${JSON.stringify(data, null, 2)}
   </div>
 `;
 
-  // No longer a Promise, just a helper
   const renderTemplateToHTML = (templateId, data) => {
     return new Promise((resolve) => {
       const tempDiv = document.createElement('div');
-      tempDiv.style.width = '794px';
-      tempDiv.style.padding = '20px';
+
+      // Set PDF-optimized dimensions (A4 size in mm converted to pixels at 96 DPI)
+      const pageWidthMM = 210;
+      const pageHeightMM = 297;
+      const marginMM = 15;
+
+      const contentWidthMM = pageWidthMM - (marginMM * 2);
+      const contentWidthPX = (contentWidthMM * 96) / 25.4; // Convert mm to pixels
+
+      tempDiv.style.width = `${contentWidthPX}px`;
+      tempDiv.style.minHeight = 'auto';
+      tempDiv.style.padding = `${marginMM}mm`;
       tempDiv.style.backgroundColor = 'white';
+      tempDiv.style.boxSizing = 'border-box';
       tempDiv.style.position = 'absolute';
       tempDiv.style.left = '-9999px';
+      tempDiv.style.fontFamily = 'Arial, sans-serif';
+      tempDiv.style.fontSize = '12px';
+      tempDiv.style.lineHeight = '1.4';
+      tempDiv.style.overflow = 'visible';
+
       document.body.appendChild(tempDiv);
 
       const TemplateComponent = getTemplateComponent(templateId);
 
       if (TemplateComponent) {
-        // *** THE FIX ***
         const root = createRoot(tempDiv);
         root.render(<TemplateComponent data={data} />);
 
-        // You still need a delay for React to finish flushing the DOM updates
+        // Increased timeout to ensure complete rendering
         setTimeout(() => {
-          const htmlContent = tempDiv.innerHTML;
-          root.unmount(); // Clean up the root
-          document.body.removeChild(tempDiv);
-          resolve(htmlContent);
-        }, 100);
+          try {
+            // Force layout calculation
+            tempDiv.getBoundingClientRect();
+
+            const htmlContent = tempDiv.innerHTML;
+            root.unmount();
+            document.body.removeChild(tempDiv);
+            resolve(htmlContent);
+          } catch (error) {
+            console.error('Error in renderTemplateToHTML:', error);
+            const fallbackHTML = generateFallbackHTML(templateId, data);
+            document.body.removeChild(tempDiv);
+            resolve(fallbackHTML);
+          }
+        }, 200);
 
       } else {
         const fallbackHTML = generateFallbackHTML(templateId, data);
@@ -242,14 +460,21 @@ ${JSON.stringify(data, null, 2)}
       setIsDownloading(true);
 
       const pdf = new jsPDF('p', 'mm', 'a4');
-      let currentPage = 1;
+
+      // PDF page dimensions in mm (A4)
+      const pageWidth = 210;
+      const pageHeight = 290;
+
+      // Safe margins to prevent cropping
+      const margin = 5;
+      const contentWidth = pageWidth - (margin * 2);
+      const contentHeight = pageHeight - (margin * 2);
 
       for (let i = 0; i < generatedDocuments.length; i++) {
         const doc = generatedDocuments[i];
 
         if (i > 0) {
           pdf.addPage();
-          currentPage++;
         }
 
         // Generate HTML using your React templates
@@ -258,35 +483,80 @@ ${JSON.stringify(data, null, 2)}
         // Create a temporary div to render the content
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlContent;
-        tempDiv.style.width = '794px';
-        tempDiv.style.padding = '20px';
+
+        // Apply PDF-optimized styles
+        tempDiv.style.width = `${contentWidth}mm`;
+        tempDiv.style.maxWidth = `${contentWidth}mm`;
+        tempDiv.style.padding = `${margin}mm`;
         tempDiv.style.backgroundColor = 'white';
+        tempDiv.style.boxSizing = 'border-box';
         tempDiv.style.position = 'absolute';
         tempDiv.style.left = '-9999px';
+        tempDiv.style.top = '0';
+        tempDiv.style.fontSize = '12px';
+        tempDiv.style.lineHeight = '1.4';
+        tempDiv.style.overflow = 'visible';
+
         document.body.appendChild(tempDiv);
 
         try {
-          // Convert to canvas
+          // Wait for rendering to complete
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          // Convert HTML to canvas with proper dimensions
           const canvas = await html2canvas(tempDiv, {
-            scale: 2,
+            scale: 2, // Higher scale for better quality
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff',
+            width: tempDiv.scrollWidth,
+            height: tempDiv.scrollHeight,
+            windowWidth: tempDiv.scrollWidth,
+            windowHeight: tempDiv.scrollHeight,
+            onclone: (clonedDoc, element) => {
+              // Ensure all elements in the clone have proper styles
+              const elements = element.querySelectorAll('*');
+              elements.forEach(el => {
+                el.style.boxSizing = 'border-box';
+                el.style.maxWidth = '100%';
+              });
+            }
           });
 
           const imgData = canvas.toDataURL('image/png', 1.0);
-          const imgWidth = 210;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+          // Calculate dimensions to fit within page
+          const imgWidth = canvas.width;
+          const imgHeight = canvas.height;
+
+          // Calculate ratio to fit content within page margins
+          const ratio = Math.min(contentWidth / imgWidth, contentHeight / imgHeight);
+          const finalWidth = imgWidth * ratio;
+          const finalHeight = imgHeight * ratio;
+
+          // Center the image on the page with margins
+          const x = margin;
+          const y = margin;
+
+          pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
 
           // Add page number
-          pdf.setFontSize(10);
+          pdf.setFontSize(8);
           pdf.setTextColor(100, 100, 100);
-          pdf.text(`Page ${currentPage} of ${generatedDocuments.length}`, 190, 285);
+          pdf.text(`Page ${i + 1} of ${generatedDocuments.length}`, pageWidth - 20, pageHeight - 10);
 
+        } catch (error) {
+          console.error(`Error generating page ${i + 1}:`, error);
+          // Add a fallback page with error message
+          pdf.setFontSize(16);
+          pdf.text(`Error generating ${doc.name}`, 20, 20);
+          pdf.setFontSize(12);
+          pdf.text('Please try generating this document again.', 20, 40);
         } finally {
-          document.body.removeChild(tempDiv);
+          // Clean up
+          if (document.body.contains(tempDiv)) {
+            document.body.removeChild(tempDiv);
+          }
         }
       }
 
@@ -491,13 +761,39 @@ ${JSON.stringify(data, null, 2)}
       .filter(Boolean);
   };
 
-  // Render current question
+  // Port filtering functions
+  const filterIndianPorts = (query) => {
+    if (!query) return INDIAN_PORTS;
+    return INDIAN_PORTS.filter(port =>
+      port.toLowerCase().includes(query.toLowerCase())
+    );
+  };
+
+  const filterDestinationPorts = (query) => {
+    let ports = [];
+    if (destination === 'UAE') ports = UAE_PORTS;
+    else if (destination === 'USA') ports = USA_PORTS;
+    else if (destination === 'Germany') ports = GERMANY_PORTS;
+
+    if (!query) return ports;
+    return ports.filter(port =>
+      port.toLowerCase().includes(query.toLowerCase())
+    );
+  };
+
+  // Render current question with suggestions
   const renderCurrentQuestion = () => {
     const questions = getRelevantQuestions();
     if (currentQuestion >= questions.length) return null;
 
     const question = questions[currentQuestion];
     const currentValue = userInputs[question.field] || '';
+    const suggestion = generateSmartSuggestion(question.field, currentValue);
+
+    // Special handling for date fields to auto-fill current date
+    if (question.field === 'invoice_date' && !currentValue) {
+      setUserInputs(prev => ({ ...prev, [question.field]: suggestion }));
+    }
 
     return (
       <div style={styles.questionCard}>
@@ -506,19 +802,70 @@ ${JSON.stringify(data, null, 2)}
           {question.required && <span style={{ color: '#ef4444' }}> *</span>}
         </h3>
 
+        {/* Suggestion Chip */}
+        {suggestion && question.type !== 'select' && question.field !== 'invoice_date' && (
+          <div style={styles.suggestionChip}>
+            <span style={styles.suggestionText}>Suggestion: {suggestion}</span>
+            <button
+              style={styles.useSuggestionButton}
+              onClick={() => {
+                setUserInputs(prev => ({ ...prev, [question.field]: suggestion }));
+              }}
+            >
+              Use This
+            </button>
+          </div>
+        )}
+
         {question.type === 'text' && (
-          <input
-            type="text"
-            value={currentValue}
-            style={styles.input}
-            placeholder={`Enter ${question.field.replace(/_/g, ' ')}...`}
-            onChange={(e) => setUserInputs(prev => ({ ...prev, [question.field]: e.target.value }))}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && e.target.value.trim()) {
-                handleQuestionAnswer(question.field, e.target.value.trim());
+          <div>
+            <input
+              type="text"
+              value={currentValue}
+              style={styles.input}
+              placeholder={question.field === 'marks_numbers'
+                ? "e.g., ABC/CHI/1-UP, Made in India, Handle with Care"
+                : `Enter ${question.field.replace(/_/g, ' ')}...`
               }
-            }}
-          />
+              onChange={(e) => setUserInputs(prev => ({ ...prev, [question.field]: e.target.value }))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.target.value.trim()) {
+                  handleQuestionAnswer(question.field, e.target.value.trim());
+                }
+              }}
+            />
+            {/* Special handling for port fields */}
+            {question.field === 'port_of_loading' && (
+              <div style={styles.portSuggestions}>
+                {filterIndianPorts(currentValue).slice(0, 5).map((port, index) => (
+                  <div
+                    key={index}
+                    style={styles.portSuggestion}
+                    onClick={() => {
+                      setUserInputs(prev => ({ ...prev, [question.field]: port }));
+                    }}
+                  >
+                    {port}
+                  </div>
+                ))}
+              </div>
+            )}
+            {question.field === 'port_of_discharge' && (
+              <div style={styles.portSuggestions}>
+                {filterDestinationPorts(currentValue).slice(0, 5).map((port, index) => (
+                  <div
+                    key={index}
+                    style={styles.portSuggestion}
+                    onClick={() => {
+                      setUserInputs(prev => ({ ...prev, [question.field]: port }));
+                    }}
+                  >
+                    {port}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {question.type === 'select' && (
@@ -555,6 +902,21 @@ ${JSON.stringify(data, null, 2)}
             rows="3"
             placeholder={`Enter ${question.field.replace(/_/g, ' ')}...`}
             onChange={(e) => setUserInputs(prev => ({ ...prev, [question.field]: e.target.value }))}
+          />
+        )}
+
+        {question.type === 'number' && (
+          <input
+            type="number"
+            value={currentValue}
+            style={styles.input}
+            placeholder={`Enter ${question.field.replace(/_/g, ' ')}...`}
+            onChange={(e) => setUserInputs(prev => ({ ...prev, [question.field]: e.target.value }))}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && e.target.value.trim()) {
+                handleQuestionAnswer(question.field, e.target.value.trim());
+              }
+            }}
           />
         )}
 
@@ -607,6 +969,17 @@ ${JSON.stringify(data, null, 2)}
             style={styles.input}
           />
 
+          {/* Suggestion Chip for IEC */}
+          <div style={styles.suggestionChip}>
+            <span style={styles.suggestionText}>Try this: {SUGGESTED_IEC}</span>
+            <button
+              style={styles.useSuggestionButton}
+              onClick={() => setIecNumber(SUGGESTED_IEC)}
+            >
+              Use This
+            </button>
+          </div>
+
           <button onClick={handleIECSubmit} style={styles.primaryButton}>
             Continue →
           </button>
@@ -644,6 +1017,17 @@ ${JSON.stringify(data, null, 2)}
             style={styles.input}
             maxLength="8"
           />
+
+          {/* Suggestion Chip for HSN */}
+          <div style={styles.suggestionChip}>
+            <span style={styles.suggestionText}>Try this: {SUGGESTED_HSN} (Spices)</span>
+            <button
+              style={styles.useSuggestionButton}
+              onClick={() => setHsnCode(SUGGESTED_HSN)}
+            >
+              Use This
+            </button>
+          </div>
 
           <div style={styles.buttonGroup}>
             <button onClick={() => setCurrentStep(1)} style={styles.secondaryButton}>
@@ -834,6 +1218,8 @@ ${JSON.stringify(data, null, 2)}
 
   // STEP 5: Buyer Details
   if (currentStep === 5) {
+    const suggestedBuyers = getSuggestedBuyerDetails();
+
     return (
       <div style={styles.container}>
         <div style={styles.progressBar}>
@@ -843,6 +1229,30 @@ ${JSON.stringify(data, null, 2)}
 
         <div style={styles.card}>
           <h2 style={styles.title}>👤 Buyer Details</h2>
+
+          {/* Buyer Suggestions */}
+          {suggestedBuyers.length > 0 && (
+            <div style={styles.suggestionsSection}>
+              <h4 style={styles.suggestionsTitle}>Suggested Buyers for {destination}:</h4>
+              {suggestedBuyers.map((buyer, index) => (
+                <div key={index} style={styles.suggestionCard}>
+                  <div style={styles.suggestionContent}>
+                    <strong>{buyer.name}</strong>
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '5px 0' }}>{buyer.address}</p>
+                    <p style={{ fontSize: '12px', color: '#9ca3af' }}>
+                      {buyer.email} • {buyer.phone} • Ref: {buyer.reference}
+                    </p>
+                  </div>
+                  <button
+                    style={styles.useSuggestionButton}
+                    onClick={() => setBuyerDetails(buyer)}
+                  >
+                    Use This
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <label style={styles.label}>Buyer Company Name *</label>
           <input
@@ -905,6 +1315,7 @@ ${JSON.stringify(data, null, 2)}
   // STEP 6: Product Details
   if (currentStep === 6) {
     const totalValue = (productDetails.quantity * productDetails.price).toFixed(2);
+    const suggestedProducts = getSuggestedProductDetails();
 
     return (
       <div style={styles.container}>
@@ -915,6 +1326,32 @@ ${JSON.stringify(data, null, 2)}
 
         <div style={styles.card}>
           <h2 style={styles.title}>📦 Product Details</h2>
+
+          {/* Product Suggestions */}
+          {suggestedProducts.length > 0 && (
+            <div style={styles.suggestionsSection}>
+              <h4 style={styles.suggestionsTitle}>Suggested Products for HSN {hsnCode}:</h4>
+              {suggestedProducts.map((product, index) => (
+                <div key={index} style={styles.suggestionCard}>
+                  <div style={styles.suggestionContent}>
+                    <strong>{product.description}</strong>
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '5px 0' }}>
+                      {product.quantity} {product.unit} × ${product.price} = ${(product.quantity * product.price).toFixed(2)}
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#9ca3af' }}>
+                      Packaging: {product.packaging} • Net: {product.net_weight}KG • Gross: {product.gross_weight}KG
+                    </p>
+                  </div>
+                  <button
+                    style={styles.useSuggestionButton}
+                    onClick={() => setProductDetails(product)}
+                  >
+                    Use This
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <label style={styles.label}>Product Description *</label>
           <input
@@ -1140,7 +1577,7 @@ ${JSON.stringify(data, null, 2)}
   return null;
 }
 
-// Styles
+// Enhanced Styles
 const styles = {
   container: {
     padding: '40px 20px',
@@ -1434,6 +1871,72 @@ const styles = {
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
     marginBottom: '15px'
+  },
+  // New styles for suggestions
+  suggestionChip: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    background: '#f0f9ff',
+    border: '1px solid #bae6fd',
+    borderRadius: '8px',
+    padding: '12px 15px',
+    marginBottom: '15px'
+  },
+  suggestionText: {
+    fontSize: '14px',
+    color: '#0369a1',
+    fontWeight: '500'
+  },
+  useSuggestionButton: {
+    background: '#0ea5e9',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '6px 12px',
+    fontSize: '12px',
+    fontWeight: '600',
+    cursor: 'pointer'
+  },
+  suggestionsSection: {
+    background: '#f8fafc',
+    padding: '15px',
+    borderRadius: '8px',
+    marginBottom: '20px',
+    border: '1px solid #e2e8f0'
+  },
+  suggestionsTitle: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#475569',
+    marginBottom: '10px'
+  },
+  suggestionCard: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    background: 'white',
+    border: '1px solid #e2e8f0',
+    borderRadius: '6px',
+    padding: '12px',
+    marginBottom: '8px'
+  },
+  suggestionContent: {
+    flex: 1
+  },
+  portSuggestions: {
+    background: 'white',
+    border: '1px solid #e5e7eb',
+    borderRadius: '0 0 8px 8px',
+    marginTop: '-15px',
+    maxHeight: '150px',
+    overflowY: 'auto'
+  },
+  portSuggestion: {
+    padding: '10px 12px',
+    borderBottom: '1px solid #f3f4f6',
+    cursor: 'pointer',
+    fontSize: '14px'
   }
 };
 
