@@ -10,7 +10,7 @@ import AIAgent2Page from './components/AIAgent/AIAgent2Page.jsx';
 import LoadingSpinner from './components/common/LoadingSpinner.jsx';
 import ExportReadinessIndex from './components/ExportReadinessIndex';
 import SmartDocGenerator from './components/SmartDocGenerator';
-import DutyCalculator from './components/Dutycalculator/DutyCalculator.jsx';
+import DutyCalculator from './components/DutyCalculator/DutyCalculator.jsx';
 import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
 
 const supabase = createClient(
