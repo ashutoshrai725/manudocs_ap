@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   TrendingUp, Globe, FileText, DollarSign, Award, ArrowUp, ArrowDown,
   Clock, MapPin, Newspaper, Target, BarChart3, Activity, Zap, ExternalLink,
   RefreshCw, ChevronRight, TrendingDown, Filter, Home, Users, Package,
   MessageSquare, Settings, HelpCircle, Bell, Search, Menu, X, ChevronDown,
   Sparkles, CheckCircle, AlertCircle, Upload, Calculator, Phone, Mail,
-  FileCheck, LogOut
+  FileCheck, LogOut, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { fetchPersonalizedExportNews, fetchNewsByCategory } from '../../services/newsService';
-import Sidebar from '../common/Sidebar';
+import Header from '../LandingPage/Header';
 
 function AnalyticsDashboard({ user, onPageChange, onLogout }) {
   const navigate = useNavigate();
@@ -19,6 +19,7 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
   const [liveNews, setLiveNews] = useState([]);
   const [loadingNews, setLoadingNews] = useState(true);
   const [newsCategory, setNewsCategory] = useState('all');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const userExportProfile = {
     countries: ['UAE', 'USA', 'UK'],
@@ -108,55 +109,66 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar Component */}
-      <Sidebar user={user} onLogout={onLogout} />
+    <div className="min-h-screen bg-gray-900" style={{
+      background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)'
+    }}>
+      {/* Header */}
+      <Header
+        user={user}
+        onPageChange={onPageChange}
+        onLogout={onLogout}
+        documentsUploaded={true}
+      />
+
+
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Export Dashboard</h1>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Track your export performance with real-time insights
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-lg px-4 py-2">
-                <Search size={18} className="text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search documents, markets..."
-                  className="bg-transparent border-none outline-none text-sm w-64"
-                />
+      <div className="pt-16 min-h-screen">
+        {/* Content Header */}
+        <div className="bg-gray-800 border-b border-gray-700 px-4 lg:px-6 py-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Analytics Dashboard</h1>
+                <p className="text-sm lg:text-base text-gray-400 mt-1">
+                  Track your export performance with real-time insights
+                </p>
               </div>
 
-              <button className="p-2 hover:bg-gray-100 rounded-lg relative">
-                <Bell size={20} className="text-gray-600" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 lg:px-4 py-2 flex-1 min-w-[200px]">
+                  <Search size={18} className="text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search documents, markets..."
+                    className="bg-transparent border-none outline-none text-sm w-full text-white placeholder-gray-400"
+                  />
+                </div>
 
-              <button 
-                onClick={() => navigate('/document-upload')}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors flex items-center gap-2"
-              >
-                New Document
-                <span className="bg-white text-green-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                  +
-                </span>
-              </button>
+                <button className="p-2 hover:bg-gray-700 rounded-lg relative">
+                  <Bell size={20} className="text-gray-300" />
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+
+                <button
+                  onClick={() => navigate('/smart-generate')}
+                  className="bg-manu-green text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors flex items-center gap-2 whitespace-nowrap"
+                >
+                  New Document
+                  <span className="bg-white text-manu-green rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                    +
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
-        </header>
+        </div>
 
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           <div className="max-w-7xl mx-auto">
             {/* Top Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
               {[
                 { icon: FileText, value: stats.totalDocuments, label: 'Documents', color: 'blue', change: '+15%' },
                 { icon: DollarSign, value: formatCurrency(stats.exportValue), label: 'Export Value', color: 'green', change: '+12%' },
@@ -168,68 +180,68 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-shadow"
+                  className="bg-gray-800 rounded-xl p-3 lg:p-4 border border-gray-700 hover:border-gray-600 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <stat.icon size={20} className={`text-${stat.color}-500`} />
+                    <stat.icon size={18} className={`text-${stat.color}-400`} />
                     {stat.change && (
-                      <span className="text-xs text-green-500 font-semibold flex items-center gap-0.5">
+                      <span className="text-xs text-green-400 font-semibold flex items-center gap-0.5">
                         <ArrowUp size={12} />
                         {stat.change}
                       </span>
                     )}
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                  <div className="text-xs text-gray-500">{stat.label}</div>
+                  <div className="text-lg lg:text-2xl font-bold text-white">{stat.value}</div>
+                  <div className="text-xs text-gray-400">{stat.label}</div>
                 </motion.div>
               ))}
             </div>
 
             {/* ERI Score + Quick Actions */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 text-white relative overflow-hidden"
+                className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-4 lg:p-6 text-white relative overflow-hidden lg:col-span-1"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="absolute top-0 right-0 w-24 h-24 lg:w-32 lg:h-32 bg-white/10 rounded-full -mr-12 lg:-mr-16 -mt-12 lg:-mt-16"></div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-3">
-                    <Award size={24} />
+                    <Award size={20} />
                     <h3 className="text-sm font-semibold">Export Readiness</h3>
                   </div>
-                  <div className="text-5xl font-bold mb-2">{readinessScore}%</div>
-                  <div className="text-sm opacity-90 mb-4">
+                  <div className="text-3xl lg:text-5xl font-bold mb-2">{readinessScore}%</div>
+                  <div className="text-xs lg:text-sm opacity-90 mb-4">
                     {readinessScore >= 80 ? 'Excellent - Ready to export!' : readinessScore >= 60 ? 'Good - Minor improvements needed' : 'Fair - Work on key areas'}
                   </div>
                   <button
                     onClick={() => navigate('/export-readiness-index')}
-                    className="bg-white text-green-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2"
+                    className="bg-white text-green-600 px-3 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2 w-full justify-center"
                   >
                     Retake Assessment
-                    <ChevronRight size={16} />
+                    <ChevronRight size={14} />
                   </button>
                 </div>
               </motion.div>
 
-              <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="lg:col-span-2 bg-gray-800 rounded-2xl p-4 lg:p-6 border border-gray-700">
+                <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
                   {[
-                    { icon: FileCheck, label: 'Generate Invoice', action: () => navigate('/document-generator') },
+                    { icon: FileCheck, label: 'Generate Invoice', action: () => navigate('/smart-generate') },
                     { icon: Calculator, label: 'Calculate Duty', action: () => navigate('/duty-calculator') },
-                    { icon: Globe, label: 'Find Markets', action: () => {} },
+                    { icon: Globe, label: 'Find Markets', action: () => { } },
                     { icon: Award, label: 'Get Certified', action: () => navigate('/export-readiness-index') }
                   ].map((action, i) => (
                     <button
                       key={i}
                       onClick={action.action}
-                      className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all group"
+                      className="flex flex-col items-center gap-2 p-3 border border-gray-700 rounded-xl hover:border-manu-green hover:bg-gray-700 transition-all group text-center"
                     >
-                      <div className="w-10 h-10 bg-gray-100 group-hover:bg-green-500 rounded-lg flex items-center justify-center transition-colors">
-                        <action.icon size={20} className="text-gray-600 group-hover:text-white" />
+                      <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gray-700 group-hover:bg-manu-green rounded-lg flex items-center justify-center transition-colors">
+                        <action.icon size={16} className="text-gray-400 group-hover:text-white" />
                       </div>
-                      <span className="text-sm font-medium text-gray-700 group-hover:text-green-600">
+                      <span className="text-xs font-medium text-gray-300 group-hover:text-white leading-tight">
                         {action.label}
                       </span>
                     </button>
@@ -239,38 +251,37 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
             </div>
 
             {/* Recent Documents + Export News */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <div className="bg-white rounded-2xl p-6 border border-gray-200">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 mb-6">
+              <div className="bg-gray-800 rounded-2xl p-4 lg:p-6 border border-gray-700">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-900">Recent Documents</h3>
-                  <button className="text-sm text-green-600 hover:text-green-700 font-medium">
+                  <h3 className="text-lg font-bold text-white">Recent Documents</h3>
+                  <button className="text-sm text-manu-green hover:text-green-400 font-medium">
                     View All →
                   </button>
                 </div>
-                
-                <div className="space-y-3">
+
+                <div className="space-y-2 lg:space-y-3">
                   {recentDocs.map((doc, i) => (
                     <motion.div
                       key={doc.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.03 }}
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+                      className="flex items-center gap-3 p-2 lg:p-3 hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
                     >
-                      <div className="text-2xl">{doc.icon}</div>
+                      <div className="text-xl lg:text-2xl">{doc.icon}</div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-gray-900 truncate">
+                        <div className="font-medium text-sm text-white truncate">
                           {doc.name}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-400">
                           {doc.country} • {doc.date}
                         </div>
                       </div>
-                      <div className={`text-xs px-2 py-1 rounded-full ${
-                        doc.status === 'Completed'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                      }`}>
+                      <div className={`text-xs px-2 py-1 rounded-full ${doc.status === 'Completed'
+                        ? 'bg-green-900/50 text-green-400'
+                        : 'bg-yellow-900/50 text-yellow-400'
+                        }`}>
                         {doc.status}
                       </div>
                     </motion.div>
@@ -278,17 +289,17 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 border border-gray-200">
+              <div className="bg-gray-800 rounded-2xl p-4 lg:p-6 border border-gray-700">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <Newspaper size={20} className="text-yellow-500" />
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Newspaper size={20} className="text-yellow-400" />
                     Export News
                   </h3>
                   <div className="flex items-center gap-2">
                     <select
                       value={newsCategory}
                       onChange={(e) => handleCategoryFilter(e.target.value)}
-                      className="text-xs border border-gray-200 rounded-lg px-2 py-1"
+                      className="text-xs border border-gray-600 rounded-lg px-2 py-1 bg-gray-700 text-white"
                     >
                       <option value="all">All</option>
                       <option value="policy">Policy</option>
@@ -296,9 +307,9 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
                     </select>
                     <button
                       onClick={() => handleCategoryFilter('all')}
-                      className="p-1.5 hover:bg-gray-100 rounded-lg"
+                      className="p-1.5 hover:bg-gray-700 rounded-lg"
                     >
-                      <RefreshCw size={14} className={loadingNews ? 'animate-spin' : ''} />
+                      <RefreshCw size={14} className={loadingNews ? 'animate-spin text-gray-400' : 'text-gray-400'} />
                     </button>
                   </div>
                 </div>
@@ -306,7 +317,7 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {loadingNews ? (
                     <div className="flex items-center justify-center h-40">
-                      <RefreshCw size={24} className="text-green-500 animate-spin" />
+                      <RefreshCw size={24} className="text-manu-green animate-spin" />
                     </div>
                   ) : (
                     liveNews.map((news, i) => (
@@ -318,13 +329,13 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: i * 0.05 }}
-                        className="block p-3 hover:bg-gray-50 rounded-lg transition-colors group"
+                        className="block p-2 lg:p-3 hover:bg-gray-700 rounded-lg transition-colors group"
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <h4 className="text-xs font-medium text-gray-900 line-clamp-2 group-hover:text-green-600 transition-colors">
+                          <h4 className="text-xs font-medium text-gray-200 line-clamp-2 group-hover:text-manu-green transition-colors">
                             {news.title}
                           </h4>
-                          <ExternalLink size={12} className="text-gray-400 flex-shrink-0" />
+                          <ExternalLink size={12} className="text-gray-500 flex-shrink-0" />
                         </div>
                         <div className="flex items-center gap-2 mt-1 text-[10px] text-gray-500">
                           <span>{news.source}</span>
@@ -339,29 +350,29 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
             </div>
 
             {/* Export Trends + New Markets */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl p-6 border border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <TrendingUp size={20} className="text-blue-500" />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+              <div className="bg-gray-800 rounded-2xl p-4 lg:p-6 border border-gray-700">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <TrendingUp size={20} className="text-blue-400" />
                   Export Trends
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                   {exportTrends.map((trend, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.1 }}
-                      className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-100"
+                      className="p-3 lg:p-4 bg-gradient-to-r from-green-900/30 to-blue-900/30 rounded-xl border border-green-800/50"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-900 text-sm">{trend.product}</h4>
-                        <span className="text-green-600 font-bold text-sm flex items-center gap-1">
+                        <h4 className="font-semibold text-white text-sm">{trend.product}</h4>
+                        <span className="text-green-400 font-bold text-sm flex items-center gap-1">
                           <TrendingUp size={14} />
                           +{trend.growth}%
                         </span>
                       </div>
-                      <div className="flex items-center gap-4 text-xs text-gray-600">
+                      <div className="flex items-center gap-3 lg:gap-4 text-xs text-gray-400 flex-wrap">
                         <span className="flex items-center gap-1">
                           <Globe size={12} />
                           {trend.countries} countries
@@ -376,36 +387,35 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 border border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Zap size={20} className="text-orange-500" />
+              <div className="bg-gray-800 rounded-2xl p-4 lg:p-6 border border-gray-700">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <Zap size={20} className="text-orange-400" />
                   New Markets to Tap
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                   {newMarkets.map((market, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.1 }}
-                      className="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-100 hover:shadow-md transition-shadow cursor-pointer"
+                      className="p-3 lg:p-4 bg-gradient-to-r from-orange-900/30 to-red-900/30 rounded-xl border border-orange-800/50 hover:border-orange-600 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-2xl">{market.flag}</span>
-                          <h4 className="font-semibold text-gray-900">{market.country}</h4>
+                          <span className="text-xl lg:text-2xl">{market.flag}</span>
+                          <h4 className="font-semibold text-white text-sm lg:text-base">{market.country}</h4>
                         </div>
-                        <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
-                          market.potential === 'High'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}>
+                        <span className={`text-xs px-2 py-1 rounded-full font-semibold ${market.potential === 'High'
+                          ? 'bg-green-900/50 text-green-400'
+                          : 'bg-yellow-900/50 text-yellow-400'
+                          }`}>
                           {market.potential} Potential
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-600">Demand: {market.demand}</span>
-                        <span className="text-orange-600 font-semibold">Score: {market.score}/100</span>
+                        <span className="text-gray-400">Demand: {market.demand}</span>
+                        <span className="text-orange-400 font-semibold">Score: {market.score}/100</span>
                       </div>
                     </motion.div>
                   ))}

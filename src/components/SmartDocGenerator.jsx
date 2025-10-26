@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MessageCircle, FileText, Download, Mail, Upload, ChevronRight, ChevronLeft, Home, Edit3, Send } from 'lucide-react';
 import { lookupIEC } from '../utils/iecLookup';
 import { getCertificatesByHSN } from '../utils/certificateHelper';
 import { getCountryInfo } from '../utils/documentSelector';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-// Import for the legacy/preview rendering (Step 8)
-import * as ReactDOM from 'react-dom';
-
-// Import the modern API for PDF generation (The core fix)
+import * as ReactDOM from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
-// Import all your existing template components
+
+// Import template components
 import CommercialInvoice from './templates/CommercialInvoice';
 import PackingList from './templates/PackingList';
 import CertificateOfOrigin from './templates/CertificateOfOrigin';
@@ -20,6 +20,7 @@ import ISFFiling from './templates/ISFFiling';
 import FDAPriorNotice from './templates/FDAPriorNotice';
 import EUR1Certificate from './templates/EUR1Certificate';
 import REXCertificate from './templates/REXCertificate';
+import Header from './LandingPage/Header';
 
 // Data for suggestions
 const SUGGESTED_IEC = "demo";
@@ -101,12 +102,11 @@ const BANK_DETAILS_SUGGESTIONS = [
   "HDFC Bank, Corporate Branch\nAccount: 45678901234\nIFSC: HDFC0000789\nSWIFT: HDFCINBB"
 ];
 
-function ExtendedSmartDocGenerator() {
+function ExtendedSmartDocGenerator({ user, onPageChange, onLogout, documentsUploaded = true }) {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [iecNumber, setIecNumber] = useState('');
   const [companyData, setCompanyData] = useState(null);
-
-  // Smart flow data
   const [hsnCode, setHsnCode] = useState('');
   const [certificates, setCertificates] = useState(null);
   const [destination, setDestination] = useState('');
@@ -129,19 +129,13 @@ function ExtendedSmartDocGenerator() {
     gross_weight: '',
     measurements: ''
   });
-
-  // Extended document questions state
   const [userInputs, setUserInputs] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [generatedDocuments, setGeneratedDocuments] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-
-  // State for filtered suggestions
-  const [filteredIndianPorts, setFilteredIndianPorts] = useState([]);
-  const [filteredDestinationPorts, setFilteredDestinationPorts] = useState([]);
-  const [showIndianPorts, setShowIndianPorts] = useState(false);
-  const [showDestinationPorts, setShowDestinationPorts] = useState(false);
+  const [activeDocIndex, setActiveDocIndex] = useState(0);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   // All possible questions needed for documents
   const allDocumentQuestions = [
@@ -208,52 +202,6 @@ function ExtendedSmartDocGenerator() {
     { field: 'authorized_signatory_designation', question: 'Authorized signatory designation?', type: 'select', options: DESIGNATIONS, required: true }
   ];
 
-  // Get only relevant questions based on selected documents
-  const getRelevantQuestions = () => {
-    if (!countryInfo) return [];
-
-    const requiredFields = new Set();
-
-    // Always ask these core questions
-    const coreFields = [
-      'exporter_contact_person', 'exporter_contact_info', 'authorized_signatory_name',
-      'authorized_signatory_designation', 'vessel_flight_details', 'port_of_loading',
-      'port_of_discharge', 'departure_date', 'incoterms', 'payment_method',
-      'currency', 'bank_details'
-    ];
-
-    coreFields.forEach(field => requiredFields.add(field));
-
-    // Add fields based on specific documents
-    countryInfo.documents.forEach(doc => {
-      if (doc.includes('Commercial Invoice')) {
-        ['invoice_number', 'invoice_date', 'buyer_reference', 'lc_number', 'insurance_policy'].forEach(f => requiredFields.add(f));
-      }
-      if (doc.includes('Packing List')) {
-        ['package_details', 'net_weight_total', 'gross_weight_total', 'measurements_total'].forEach(f => requiredFields.add(f));
-      }
-      if (doc.includes('Certificate of Origin') || doc.includes('EUR.1')) {
-        ['origin_criteria', 'tariff_code', 'marks_numbers'].forEach(f => requiredFields.add(f));
-      }
-      if (doc.includes('Bill of Lading')) {
-        ['bill_of_lading_number', 'shippers_reference', 'freight_terms', 'number_of_originals', 'notify_party'].forEach(f => requiredFields.add(f));
-      }
-      if (doc.includes('Health Certificate')) {
-        ['health_certificate_number', 'manufacturing_plant', 'product_batch_number', 'manufacturing_date', 'expiry_date'].forEach(f => requiredFields.add(f));
-      }
-      if (doc.includes('Halal Certificate')) {
-        ['halal_certificate_number', 'halal_supervisor', 'inspection_date'].forEach(f => requiredFields.add(f));
-      }
-      if (doc.includes('ISF Filing')) {
-        ['importer_of_record', 'manufacturer_supplier', 'seller_owner', 'consignee_number'].forEach(f => requiredFields.add(f));
-      }
-    });
-
-    return allDocumentQuestions.filter(question =>
-      requiredFields.has(question.field)
-    );
-  };
-
   // Helper functions for suggestions
   const getSuggestedBuyerDetails = () => {
     const buyers = {
@@ -291,73 +239,52 @@ function ExtendedSmartDocGenerator() {
     switch (field) {
       case 'invoice_number':
         return `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
-
       case 'invoice_date':
         return new Date().toISOString().split('T')[0];
-
       case 'buyer_reference':
         return `${buyerDetails.name.substring(0, 3).toUpperCase()}-PO-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 100)).padStart(2, '0')}`;
-
       case 'insurance_policy':
         return `MC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
-
       case 'package_details':
         if (productDetails.packaging) {
           return `${productDetails.packaging}, Total ${productDetails.quantity} ${productDetails.unit}`;
         }
         return `${Math.ceil(productDetails.quantity / 50)} bags x 50 KG each, Total ${productDetails.quantity} KG`;
-
       case 'net_weight_total':
         return productDetails.net_weight || Math.round(productDetails.quantity * 1).toString();
-
       case 'gross_weight_total':
         return productDetails.gross_weight || Math.round(productDetails.quantity * 1.02).toString();
-
       case 'measurements_total':
         if (productDetails.measurements) return productDetails.measurements;
         const packages = Math.ceil(productDetails.quantity / 50);
         const volume = (packages * 0.1).toFixed(1);
         return `${volume} m³ (${packages} packages)`;
-
       case 'tariff_code':
         return hsnCode;
-
       case 'marks_numbers':
         return `${buyerDetails.name.substring(0, 3).toUpperCase()}/${productDetails.description.substring(0, 3).toUpperCase()}/1-UP`;
-
       case 'bill_of_lading_number':
         return `MBL${new Date().getFullYear()}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
-
       case 'shippers_reference':
         return `${companyData?.companyName?.substring(0, 3).toUpperCase() || 'EXP'}-SR-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 100)).padStart(2, '0')}`;
-
       case 'notify_party':
         return `Same as consignee - ${buyerDetails.name}`;
-
       case 'health_certificate_number':
         return `HC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
-
       case 'manufacturing_plant':
         return companyData?.fullAddress || "Plot No. 123, Industrial Area, Mumbai, Maharashtra, India";
-
       case 'product_batch_number':
         return `BATCH-${new Date().getMonth() + 1}${new Date().getFullYear().toString().slice(-2)}-${String(Math.floor(Math.random() * 100)).padStart(2, '0')}`;
-
       case 'halal_certificate_number':
         return `HALAL-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
-
       case 'vessel_flight_details':
         return `MAERSK HONGFKONG V.234${Math.floor(Math.random() * 10)}`;
-
       case 'bank_details':
         return BANK_DETAILS_SUGGESTIONS[Math.floor(Math.random() * BANK_DETAILS_SUGGESTIONS.length)];
-
       case 'exporter_contact_person':
         return INDIAN_NAMES[Math.floor(Math.random() * INDIAN_NAMES.length)];
-
       case 'exporter_contact_info':
         return INDIAN_CONTACTS[Math.floor(Math.random() * INDIAN_CONTACTS.length)];
-
       default:
         return currentValue || '';
     }
@@ -377,37 +304,32 @@ function ExtendedSmartDocGenerator() {
       eur1_certificate: EUR1Certificate,
       rex_certificate: REXCertificate,
     };
-
     return templateMap[templateId] || null;
   };
 
   // Fallback template for unsupported documents
   const generateFallbackHTML = (docName, data) => `
-  <div style="padding: 20px; font-family: Arial, sans-serif;">
-    <div style="text-align: center; border-bottom: 3px solid #333; padding-bottom: 20px; margin-bottom: 30px;">
-      <h1 style="color: #2c3e50; margin: 0;">${docName.toUpperCase()}</h1>
+    <div style="padding: 20px; font-family: Arial, sans-serif;">
+      <div style="text-align: center; border-bottom: 3px solid #333; padding-bottom: 20px; margin-bottom: 30px;">
+        <h1 style="color: #2c3e50; margin: 0;">${docName.toUpperCase()}</h1>
+      </div>
+      <div style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
+        <h3 style="color: #34495e;">DOCUMENT DATA</h3>
+        <pre style="white-space: pre-wrap; font-family: Arial, sans-serif; font-size: 12px;">
+  ${JSON.stringify(data, null, 2)}
+        </pre>
+      </div>
     </div>
-    
-    <div style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
-      <h3 style="color: #34495e;">DOCUMENT DATA</h3>
-      <pre style="white-space: pre-wrap; font-family: Arial, sans-serif; font-size: 12px;">
-${JSON.stringify(data, null, 2)}
-      </pre>
-    </div>
-  </div>
-`;
+  `;
 
   const renderTemplateToHTML = (templateId, data) => {
     return new Promise((resolve) => {
       const tempDiv = document.createElement('div');
-
-      // Set PDF-optimized dimensions (A4 size in mm converted to pixels at 96 DPI)
       const pageWidthMM = 210;
       const pageHeightMM = 297;
       const marginMM = 15;
-
       const contentWidthMM = pageWidthMM - (marginMM * 2);
-      const contentWidthPX = (contentWidthMM * 96) / 25.4; // Convert mm to pixels
+      const contentWidthPX = (contentWidthMM * 96) / 25.4;
 
       tempDiv.style.width = `${contentWidthPX}px`;
       tempDiv.style.minHeight = 'auto';
@@ -429,12 +351,9 @@ ${JSON.stringify(data, null, 2)}
         const root = createRoot(tempDiv);
         root.render(<TemplateComponent data={data} />);
 
-        // Increased timeout to ensure complete rendering
         setTimeout(() => {
           try {
-            // Force layout calculation
             tempDiv.getBoundingClientRect();
-
             const htmlContent = tempDiv.innerHTML;
             root.unmount();
             document.body.removeChild(tempDiv);
@@ -446,7 +365,6 @@ ${JSON.stringify(data, null, 2)}
             resolve(fallbackHTML);
           }
         }, 200);
-
       } else {
         const fallbackHTML = generateFallbackHTML(templateId, data);
         document.body.removeChild(tempDiv);
@@ -458,33 +376,21 @@ ${JSON.stringify(data, null, 2)}
   const downloadCombinedPDF = async () => {
     try {
       setIsDownloading(true);
-
       const pdf = new jsPDF('p', 'mm', 'a4');
-
-      // PDF page dimensions in mm (A4)
       const pageWidth = 210;
       const pageHeight = 290;
-
-      // Safe margins to prevent cropping
       const margin = 5;
       const contentWidth = pageWidth - (margin * 2);
       const contentHeight = pageHeight - (margin * 2);
 
       for (let i = 0; i < generatedDocuments.length; i++) {
         const doc = generatedDocuments[i];
+        if (i > 0) pdf.addPage();
 
-        if (i > 0) {
-          pdf.addPage();
-        }
-
-        // Generate HTML using your React templates
         const htmlContent = await renderTemplateToHTML(doc.id, doc.props);
-
-        // Create a temporary div to render the content
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlContent;
 
-        // Apply PDF-optimized styles
         tempDiv.style.width = `${contentWidth}mm`;
         tempDiv.style.maxWidth = `${contentWidth}mm`;
         tempDiv.style.padding = `${margin}mm`;
@@ -500,12 +406,9 @@ ${JSON.stringify(data, null, 2)}
         document.body.appendChild(tempDiv);
 
         try {
-          // Wait for rendering to complete
           await new Promise(resolve => setTimeout(resolve, 100));
-
-          // Convert HTML to canvas with proper dimensions
           const canvas = await html2canvas(tempDiv, {
-            scale: 2, // Higher scale for better quality
+            scale: 2,
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff',
@@ -514,7 +417,6 @@ ${JSON.stringify(data, null, 2)}
             windowWidth: tempDiv.scrollWidth,
             windowHeight: tempDiv.scrollHeight,
             onclone: (clonedDoc, element) => {
-              // Ensure all elements in the clone have proper styles
               const elements = element.querySelectorAll('*');
               elements.forEach(el => {
                 el.style.boxSizing = 'border-box';
@@ -524,36 +426,24 @@ ${JSON.stringify(data, null, 2)}
           });
 
           const imgData = canvas.toDataURL('image/png', 1.0);
-
-          // Calculate dimensions to fit within page
           const imgWidth = canvas.width;
           const imgHeight = canvas.height;
-
-          // Calculate ratio to fit content within page margins
           const ratio = Math.min(contentWidth / imgWidth, contentHeight / imgHeight);
           const finalWidth = imgWidth * ratio;
           const finalHeight = imgHeight * ratio;
 
-          // Center the image on the page with margins
-          const x = margin;
-          const y = margin;
-
-          pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
-
-          // Add page number
+          pdf.addImage(imgData, 'PNG', margin, margin, finalWidth, finalHeight);
           pdf.setFontSize(8);
           pdf.setTextColor(100, 100, 100);
           pdf.text(`Page ${i + 1} of ${generatedDocuments.length}`, pageWidth - 20, pageHeight - 10);
 
         } catch (error) {
           console.error(`Error generating page ${i + 1}:`, error);
-          // Add a fallback page with error message
           pdf.setFontSize(16);
           pdf.text(`Error generating ${doc.name}`, 20, 20);
           pdf.setFontSize(12);
           pdf.text('Please try generating this document again.', 20, 40);
         } finally {
-          // Clean up
           if (document.body.contains(tempDiv)) {
             document.body.removeChild(tempDiv);
           }
@@ -562,7 +452,6 @@ ${JSON.stringify(data, null, 2)}
 
       const fileName = `export-documents-${buyerDetails.name.replace(/\s+/g, '-')}-${Date.now()}.pdf`;
       pdf.save(fileName);
-
       alert(`✅ Success! Downloaded ${generatedDocuments.length} professional documents`);
 
     } catch (error) {
@@ -579,7 +468,7 @@ ${JSON.stringify(data, null, 2)}
     return TemplateComponent ? <TemplateComponent data={data} /> : <div>Template not found: {templateId}</div>;
   };
 
-  // Smart Flow Steps (1-6)
+  // Smart Flow Steps
   const handleIECSubmit = () => {
     const result = lookupIEC(iecNumber);
     if (result.success) {
@@ -595,7 +484,6 @@ ${JSON.stringify(data, null, 2)}
       alert('Please enter valid HSN code (min 4 digits)');
       return;
     }
-
     const certInfo = getCertificatesByHSN(hsnCode);
     setCertificates(certInfo);
     setCurrentStep(3);
@@ -606,14 +494,12 @@ ${JSON.stringify(data, null, 2)}
       alert('Please select destination');
       return;
     }
-
     const info = getCountryInfo(destination);
     setCountryInfo(info);
     setCurrentStep(4);
   };
 
   const handleCountryQuestionsSubmit = () => {
-    // Store country-specific answers
     setUserInputs(prev => ({ ...prev, ...countryAnswers }));
     setCurrentStep(5);
   };
@@ -632,7 +518,6 @@ ${JSON.stringify(data, null, 2)}
       return;
     }
 
-    // Store product data and move to extended questions
     const productData = {
       product_code: `HSN-${hsnCode}`,
       description: productDetails.description,
@@ -656,6 +541,45 @@ ${JSON.stringify(data, null, 2)}
     setCurrentQuestion(0);
   };
 
+  // Get only relevant questions based on selected documents
+  const getRelevantQuestions = () => {
+    if (!countryInfo) return [];
+    const requiredFields = new Set();
+    const coreFields = [
+      'exporter_contact_person', 'exporter_contact_info', 'authorized_signatory_name',
+      'authorized_signatory_designation', 'vessel_flight_details', 'port_of_loading',
+      'port_of_discharge', 'departure_date', 'incoterms', 'payment_method',
+      'currency', 'bank_details'
+    ];
+
+    coreFields.forEach(field => requiredFields.add(field));
+    countryInfo.documents.forEach(doc => {
+      if (doc.includes('Commercial Invoice')) {
+        ['invoice_number', 'invoice_date', 'buyer_reference', 'lc_number', 'insurance_policy'].forEach(f => requiredFields.add(f));
+      }
+      if (doc.includes('Packing List')) {
+        ['package_details', 'net_weight_total', 'gross_weight_total', 'measurements_total'].forEach(f => requiredFields.add(f));
+      }
+      if (doc.includes('Certificate of Origin') || doc.includes('EUR.1')) {
+        ['origin_criteria', 'tariff_code', 'marks_numbers'].forEach(f => requiredFields.add(f));
+      }
+      if (doc.includes('Bill of Lading')) {
+        ['bill_of_lading_number', 'shippers_reference', 'freight_terms', 'number_of_originals', 'notify_party'].forEach(f => requiredFields.add(f));
+      }
+      if (doc.includes('Health Certificate')) {
+        ['health_certificate_number', 'manufacturing_plant', 'product_batch_number', 'manufacturing_date', 'expiry_date'].forEach(f => requiredFields.add(f));
+      }
+      if (doc.includes('Halal Certificate')) {
+        ['halal_certificate_number', 'halal_supervisor', 'inspection_date'].forEach(f => requiredFields.add(f));
+      }
+      if (doc.includes('ISF Filing')) {
+        ['importer_of_record', 'manufacturer_supplier', 'seller_owner', 'consignee_number'].forEach(f => requiredFields.add(f));
+      }
+    });
+
+    return allDocumentQuestions.filter(question => requiredFields.has(question.field));
+  };
+
   // Extended Questions Handler
   const handleQuestionAnswer = (field, value) => {
     setUserInputs(prev => ({
@@ -674,24 +598,17 @@ ${JSON.stringify(data, null, 2)}
   // Generate all documents
   const generateAllDocuments = async () => {
     setIsGenerating(true);
-
     try {
-      // Prepare final data combining all collected information
       const finalData = {
-        // From IEC lookup
         exporter_company_name: companyData.companyName,
         exporter_address: companyData.fullAddress,
         exporter_gstin: companyData.gstin || '',
-
-        // From buyer details
         buyer_company_name: buyerDetails.name,
         buyer_address: buyerDetails.address,
         buyer_country: destination,
         buyer_reference: buyerDetails.reference,
         buyer_email: buyerDetails.email,
         buyer_phone: buyerDetails.phone,
-
-        // From product details
         products: [{
           product_code: userInputs.product_code || `HSN-${hsnCode}`,
           description: productDetails.description,
@@ -704,23 +621,14 @@ ${JSON.stringify(data, null, 2)}
           gross_weight: productDetails.gross_weight,
           measurements: productDetails.measurements
         }],
-
-        // From country-specific answers
         ...countryAnswers,
-
-        // From extended questions
         ...userInputs,
-
-        // Calculated fields
         total_amount: (productDetails.quantity * productDetails.price).toFixed(2),
-
-        // Default values for missing fields
         bill_of_lading_number: userInputs.bill_of_lading_number || `BL-${Date.now()}`,
         invoice_number: userInputs.invoice_number || `INV-${Date.now()}`,
         invoice_date: userInputs.invoice_date || new Date().toISOString().split('T')[0]
       };
 
-      // Generate documents based on country requirements
       const documentsToGenerate = mapDocumentsToTemplates(countryInfo.documents);
       const generatedDocs = documentsToGenerate.map(template => ({
         id: template.id,
@@ -761,26 +669,6 @@ ${JSON.stringify(data, null, 2)}
       .filter(Boolean);
   };
 
-  // Port filtering functions
-  const filterIndianPorts = (query) => {
-    if (!query) return INDIAN_PORTS;
-    return INDIAN_PORTS.filter(port =>
-      port.toLowerCase().includes(query.toLowerCase())
-    );
-  };
-
-  const filterDestinationPorts = (query) => {
-    let ports = [];
-    if (destination === 'UAE') ports = UAE_PORTS;
-    else if (destination === 'USA') ports = USA_PORTS;
-    else if (destination === 'Germany') ports = GERMANY_PORTS;
-
-    if (!query) return ports;
-    return ports.filter(port =>
-      port.toLowerCase().includes(query.toLowerCase())
-    );
-  };
-
   // Render current question with suggestions
   const renderCurrentQuestion = () => {
     const questions = getRelevantQuestions();
@@ -790,24 +678,22 @@ ${JSON.stringify(data, null, 2)}
     const currentValue = userInputs[question.field] || '';
     const suggestion = generateSmartSuggestion(question.field, currentValue);
 
-    // Special handling for date fields to auto-fill current date
     if (question.field === 'invoice_date' && !currentValue) {
       setUserInputs(prev => ({ ...prev, [question.field]: suggestion }));
     }
 
     return (
-      <div style={styles.questionCard}>
-        <h3 style={styles.questionTitle}>
+      <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
+        <h3 className="text-lg font-semibold text-white mb-4">
           {currentQuestion + 1}/{questions.length} - {question.question}
-          {question.required && <span style={{ color: '#ef4444' }}> *</span>}
+          {question.required && <span className="text-red-400 ml-1">*</span>}
         </h3>
 
-        {/* Suggestion Chip */}
         {suggestion && question.type !== 'select' && question.field !== 'invoice_date' && (
-          <div style={styles.suggestionChip}>
-            <span style={styles.suggestionText}>Suggestion: {suggestion}</span>
+          <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mb-4 flex items-center justify-between">
+            <span className="text-blue-300 text-sm">💡 Suggestion: {suggestion}</span>
             <button
-              style={styles.useSuggestionButton}
+              className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
               onClick={() => {
                 setUserInputs(prev => ({ ...prev, [question.field]: suggestion }));
               }}
@@ -818,66 +704,29 @@ ${JSON.stringify(data, null, 2)}
         )}
 
         {question.type === 'text' && (
-          <div>
-            <input
-              type="text"
-              value={currentValue}
-              style={styles.input}
-              placeholder={question.field === 'marks_numbers'
-                ? "e.g., ABC/CHI/1-UP, Made in India, Handle with Care"
-                : `Enter ${question.field.replace(/_/g, ' ')}...`
+          <input
+            type="text"
+            value={currentValue}
+            className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+            placeholder={`Enter ${question.field.replace(/_/g, ' ')}...`}
+            onChange={(e) => setUserInputs(prev => ({ ...prev, [question.field]: e.target.value }))}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && e.target.value.trim()) {
+                handleQuestionAnswer(question.field, e.target.value.trim());
               }
-              onChange={(e) => setUserInputs(prev => ({ ...prev, [question.field]: e.target.value }))}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && e.target.value.trim()) {
-                  handleQuestionAnswer(question.field, e.target.value.trim());
-                }
-              }}
-            />
-            {/* Special handling for port fields */}
-            {question.field === 'port_of_loading' && (
-              <div style={styles.portSuggestions}>
-                {filterIndianPorts(currentValue).slice(0, 5).map((port, index) => (
-                  <div
-                    key={index}
-                    style={styles.portSuggestion}
-                    onClick={() => {
-                      setUserInputs(prev => ({ ...prev, [question.field]: port }));
-                    }}
-                  >
-                    {port}
-                  </div>
-                ))}
-              </div>
-            )}
-            {question.field === 'port_of_discharge' && (
-              <div style={styles.portSuggestions}>
-                {filterDestinationPorts(currentValue).slice(0, 5).map((port, index) => (
-                  <div
-                    key={index}
-                    style={styles.portSuggestion}
-                    onClick={() => {
-                      setUserInputs(prev => ({ ...prev, [question.field]: port }));
-                    }}
-                  >
-                    {port}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            }}
+          />
         )}
 
         {question.type === 'select' && (
-          <div style={styles.optionsGrid}>
+          <div className="grid grid-cols-2 gap-3">
             {question.options.map(option => (
               <button
                 key={option}
-                style={{
-                  ...styles.optionButton,
-                  background: currentValue === option ? '#10b981' : 'white',
-                  color: currentValue === option ? 'white' : '#374151'
-                }}
+                className={`p-3 rounded-lg border transition-colors ${currentValue === option
+                  ? 'bg-manu-green border-manu-green text-white'
+                  : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'
+                  }`}
                 onClick={() => handleQuestionAnswer(question.field, option)}
               >
                 {option}
@@ -890,7 +739,7 @@ ${JSON.stringify(data, null, 2)}
           <input
             type="date"
             value={currentValue}
-            style={styles.input}
+            className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-manu-green"
             onChange={(e) => setUserInputs(prev => ({ ...prev, [question.field]: e.target.value }))}
           />
         )}
@@ -898,7 +747,7 @@ ${JSON.stringify(data, null, 2)}
         {question.type === 'textarea' && (
           <textarea
             value={currentValue}
-            style={styles.textarea}
+            className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
             rows="3"
             placeholder={`Enter ${question.field.replace(/_/g, ' ')}...`}
             onChange={(e) => setUserInputs(prev => ({ ...prev, [question.field]: e.target.value }))}
@@ -909,7 +758,7 @@ ${JSON.stringify(data, null, 2)}
           <input
             type="number"
             value={currentValue}
-            style={styles.input}
+            className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
             placeholder={`Enter ${question.field.replace(/_/g, ' ')}...`}
             onChange={(e) => setUserInputs(prev => ({ ...prev, [question.field]: e.target.value }))}
             onKeyDown={(e) => {
@@ -920,9 +769,9 @@ ${JSON.stringify(data, null, 2)}
           />
         )}
 
-        <div style={styles.questionActions}>
+        <div className="mt-6">
           <button
-            style={styles.nextButton}
+            className="w-full bg-manu-green text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-semibold disabled:bg-gray-600 disabled:cursor-not-allowed"
             onClick={() => {
               if (question.required && !currentValue) {
                 alert('This field is required');
@@ -936,55 +785,142 @@ ${JSON.stringify(data, null, 2)}
           </button>
         </div>
 
-        <div style={styles.progress}>
-          <div style={{
-            width: `${((currentQuestion + 1) / questions.length) * 100}%`,
-            height: '4px',
-            background: '#10b981',
-            borderRadius: '2px'
-          }}></div>
+        <div className="mt-4 bg-gray-600 rounded-full h-2">
+          <div
+            className="bg-manu-green h-2 rounded-full transition-all duration-500"
+            style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+          ></div>
         </div>
       </div>
     );
   };
 
+  // Email sending function
+  const sendPdfViaEmail = async () => {
+    if (generatedDocuments.length === 0) {
+      alert("No documents generated to send.");
+      return;
+    }
+
+    setIsSendingEmail(true);
+    try {
+      const userEmail = user?.email || user?.user_metadata?.email || 'unknown@example.com';
+      alert(`📧 Documents would be sent to: ${userEmail}\n\nThis feature integrates with your email service to send professional export documents directly to your inbox.`);
+    } catch (error) {
+      console.error('Error sending email:', error);
+      alert('❌ Error sending documents via email. Please try again.');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  // Reset function
+  const resetGenerator = () => {
+    setCurrentStep(1);
+    setGeneratedDocuments([]);
+    setUserInputs({});
+    setCurrentQuestion(0);
+    setCountryAnswers({});
+    setIecNumber('');
+    setHsnCode('');
+    setCertificates(null);
+    setDestination('');
+    setCountryInfo(null);
+    setBuyerDetails({ name: '', address: '', email: '', phone: '', reference: '' });
+    setProductDetails({ description: '', quantity: '', unit: 'KG', price: '', packaging: '', net_weight: '', gross_weight: '', measurements: '' });
+  };
+
+  // Progress calculation
+  const getProgressPercentage = () => {
+    const steps = {
+      1: 14,
+      2: 28,
+      3: 42,
+      4: 56,
+      5: 70,
+      6: 84,
+      7: 92,
+      8: 100
+    };
+    return steps[currentStep] || 0;
+  };
+
   // STEP 1: IEC Input
   if (currentStep === 1) {
     return (
-      <div style={styles.container}>
-        <div style={styles.progressBar}>
-          <div style={{ ...styles.progressFill, width: '14%' }}></div>
-        </div>
-        <div style={styles.stepIndicator}>Step 1 of 8</div>
+      <div className="min-h-screen bg-gray-900" style={{
+        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)'
+      }}>
+        <Header
+          user={user}
+          onPageChange={onPageChange}
+          onLogout={onLogout}
+          documentsUploaded={documentsUploaded}
+        />
 
-        <div style={styles.card}>
-          <h2 style={styles.title}>🏢 Enter Your IEC Number</h2>
-          <p style={styles.subtitle}>We'll auto-fill your company details</p>
+        <div className="pt-16 min-h-screen flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl">
+            <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 shadow-2xl">
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 bg-manu-green rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FileText className="text-white" size={32} />
+                </div>
+                <h1 className="text-3xl font-bold text-white mb-2">Smart Document Generator</h1>
+                <p className="text-gray-400">Generate professional export documents in minutes</p>
+              </div>
 
-          <input
-            type="text"
-            value={iecNumber}
-            onChange={(e) => setIecNumber(e.target.value)}
-            placeholder="Enter IEC (e.g., demo)"
-            style={styles.input}
-          />
+              <div className="mb-8">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                  <span>Step 1 of 8</span>
+                  <span>{getProgressPercentage()}% Complete</span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-manu-green h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${getProgressPercentage()}%` }}
+                  ></div>
+                </div>
+              </div>
 
-          {/* Suggestion Chip for IEC */}
-          <div style={styles.suggestionChip}>
-            <span style={styles.suggestionText}>Try this: {SUGGESTED_IEC}</span>
-            <button
-              style={styles.useSuggestionButton}
-              onClick={() => setIecNumber(SUGGESTED_IEC)}
-            >
-              Use This
-            </button>
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+                    🏢 Enter Your IEC Number
+                  </h2>
+                  <p className="text-gray-400 mb-4">We'll auto-fill your company details from our verified database</p>
+
+                  <input
+                    type="text"
+                    value={iecNumber}
+                    onChange={(e) => setIecNumber(e.target.value)}
+                    placeholder="Enter IEC (e.g., demo)"
+                    className="w-full p-4 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                  />
+
+                  <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mt-4 flex items-center justify-between">
+                    <span className="text-blue-300 text-sm">💡 Try this demo IEC: {SUGGESTED_IEC}</span>
+                    <button
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                      onClick={() => setIecNumber(SUGGESTED_IEC)}
+                    >
+                      Use This
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleIECSubmit}
+                  className="w-full bg-manu-green text-white py-4 rounded-lg hover:bg-green-600 transition-colors font-semibold text-lg flex items-center justify-center gap-2"
+                >
+                  Continue <ChevronRight size={20} />
+                </button>
+
+                <p className="text-center text-gray-400 text-sm">
+                  💡 Try "demo" for testing with sample company data
+                </p>
+              </div>
+            </div>
           </div>
-
-          <button onClick={handleIECSubmit} style={styles.primaryButton}>
-            Continue →
-          </button>
-
-          <p style={styles.hint}>💡 Try "demo" for testing</p>
         </div>
       </div>
     );
@@ -993,52 +929,88 @@ ${JSON.stringify(data, null, 2)}
   // STEP 2: HSN Code
   if (currentStep === 2 && companyData) {
     return (
-      <div style={styles.container}>
-        <div style={styles.progressBar}>
-          <div style={{ ...styles.progressFill, width: '28%' }}></div>
-        </div>
-        <div style={styles.stepIndicator}>Step 2 of 8</div>
+      <div className="min-h-screen bg-gray-900" style={{
+        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)'
+      }}>
+        <Header
+          user={user}
+          onPageChange={onPageChange}
+          onLogout={onLogout}
+          documentsUploaded={documentsUploaded}
+        />
 
-        <div style={styles.successBox}>
-          <h3 style={{ color: '#10b981' }}>✅ Company Found</h3>
-          <p><strong>{companyData.companyName}</strong></p>
-          <p style={{ fontSize: '14px', color: '#6b7280' }}>{companyData.fullAddress}</p>
-        </div>
+        <div className="pt-16 min-h-screen flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl">
+            <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 shadow-2xl">
+              <div className="mb-8">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                  <span>Step 2 of 8</span>
+                  <span>{getProgressPercentage()}% Complete</span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-manu-green h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${getProgressPercentage()}%` }}
+                  ></div>
+                </div>
+              </div>
 
-        <div style={styles.card}>
-          <h2 style={styles.title}>📦 Enter HSN Code</h2>
-          <p style={styles.subtitle}>We'll show required certificates for your product</p>
+              <div className="bg-green-900/20 border border-green-700 rounded-lg p-6 mb-6">
+                <h3 className="text-green-400 font-semibold mb-2 flex items-center gap-2">
+                  ✅ Company Found
+                </h3>
+                <p className="text-white font-semibold text-lg">{companyData.companyName}</p>
+                <p className="text-gray-300 text-sm mt-1">{companyData.fullAddress}</p>
+              </div>
 
-          <input
-            type="text"
-            value={hsnCode}
-            onChange={(e) => setHsnCode(e.target.value)}
-            placeholder="Enter HSN Code (e.g., 09041100)"
-            style={styles.input}
-            maxLength="8"
-          />
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+                    📦 Enter HSN Code
+                  </h2>
+                  <p className="text-gray-400 mb-4">We'll show required certificates for your product category</p>
 
-          {/* Suggestion Chip for HSN */}
-          <div style={styles.suggestionChip}>
-            <span style={styles.suggestionText}>Try this: {SUGGESTED_HSN} (Spices)</span>
-            <button
-              style={styles.useSuggestionButton}
-              onClick={() => setHsnCode(SUGGESTED_HSN)}
-            >
-              Use This
-            </button>
+                  <input
+                    type="text"
+                    value={hsnCode}
+                    onChange={(e) => setHsnCode(e.target.value)}
+                    placeholder="Enter HSN Code (e.g., 09041100)"
+                    className="w-full p-4 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                    maxLength="8"
+                  />
+
+                  <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mt-4 flex items-center justify-between">
+                    <span className="text-blue-300 text-sm">💡 Try: {SUGGESTED_HSN} (Spices)</span>
+                    <button
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                      onClick={() => setHsnCode(SUGGESTED_HSN)}
+                    >
+                      Use This
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setCurrentStep(1)}
+                    className="flex-1 bg-gray-700 text-white py-4 rounded-lg hover:bg-gray-600 transition-colors font-semibold flex items-center justify-center gap-2"
+                  >
+                    <ChevronLeft size={20} /> Back
+                  </button>
+                  <button
+                    onClick={handleHSNSubmit}
+                    className="flex-1 bg-manu-green text-white py-4 rounded-lg hover:bg-green-600 transition-colors font-semibold flex items-center justify-center gap-2"
+                  >
+                    Continue <ChevronRight size={20} />
+                  </button>
+                </div>
+
+                <p className="text-center text-gray-400 text-sm">
+                  💡 Try "09041100" (spices) or "52051100" (textiles) for testing
+                </p>
+              </div>
+            </div>
           </div>
-
-          <div style={styles.buttonGroup}>
-            <button onClick={() => setCurrentStep(1)} style={styles.secondaryButton}>
-              ← Back
-            </button>
-            <button onClick={handleHSNSubmit} style={styles.primaryButton}>
-              Continue →
-            </button>
-          </div>
-
-          <p style={styles.hint}>💡 Try "09041100" (spices) or "52051100" (textiles)</p>
         </div>
       </div>
     );
@@ -1047,70 +1019,97 @@ ${JSON.stringify(data, null, 2)}
   // STEP 3: Show Certificates + Select Country
   if (currentStep === 3 && certificates) {
     return (
-      <div style={styles.container}>
-        <div style={styles.progressBar}>
-          <div style={{ ...styles.progressFill, width: '42%' }}></div>
-        </div>
-        <div style={styles.stepIndicator}>Step 3 of 8</div>
+      <div className="min-h-screen bg-gray-900" style={{
+        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)'
+      }}>
+        <Header
+          user={user}
+          onPageChange={onPageChange}
+          onLogout={onLogout}
+          documentsUploaded={documentsUploaded}
+        />
 
-        {/* Show certificates alert */}
-        {certificates.found && certificates.certificates.length > 0 && (
-          <div style={styles.alertBox}>
-            <h3 style={{ color: '#2563eb', marginBottom: '15px' }}>
-              📋 Required Certificates for {certificates.category}
-            </h3>
-            <p style={{ marginBottom: '15px' }}>{certificates.description}</p>
-
-            {certificates.certificates.map((cert, idx) => (
-              <div key={idx} style={styles.certCard}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <div style={{ flex: 1 }}>
-                    <strong>{cert.name}</strong>
-                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '5px 0' }}>
-                      {cert.reason}
-                    </p>
-                    <p style={{ fontSize: '12px', color: '#9ca3af' }}>
-                      Issuer: {cert.issuer} • Cost: {cert.cost} • Time: {cert.processingTime}
-                    </p>
-                  </div>
-                  <span style={{
-                    padding: '4px 12px',
-                    background: '#dbeafe',
-                    color: '#1e40af',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                    fontWeight: 'bold'
-                  }}>
-                    Required
-                  </span>
+        <div className="pt-16 min-h-screen flex items-center justify-center p-4">
+          <div className="w-full max-w-4xl">
+            <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 shadow-2xl">
+              <div className="mb-8">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                  <span>Step 3 of 8</span>
+                  <span>{getProgressPercentage()}% Complete</span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-manu-green h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${getProgressPercentage()}%` }}
+                  ></div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
 
-        <div style={styles.card}>
-          <h2 style={styles.title}>🌍 Select Destination Country</h2>
-          <p style={styles.subtitle}>We'll show country-specific requirements</p>
+              {certificates.found && certificates.certificates.length > 0 && (
+                <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-6 mb-6">
+                  <h3 className="text-blue-400 font-semibold mb-4 flex items-center gap-2 text-lg">
+                    📋 Required Certificates for {certificates.category}
+                  </h3>
+                  <p className="text-gray-300 mb-4">{certificates.description}</p>
 
-          <select
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            style={styles.select}
-          >
-            <option value="">-- Select Country --</option>
-            <option value="UAE">United Arab Emirates (UAE)</option>
-            <option value="USA">United States (USA)</option>
-            <option value="Germany">Germany (EU)</option>
-          </select>
+                  <div className="space-y-3">
+                    {certificates.certificates.map((cert, idx) => (
+                      <div key={idx} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <strong className="text-white">{cert.name}</strong>
+                              <span className="px-2 py-1 bg-blue-900 text-blue-300 rounded text-xs font-bold">
+                                Required
+                              </span>
+                            </div>
+                            <p className="text-gray-300 text-sm mb-2">{cert.reason}</p>
+                            <p className="text-gray-400 text-xs">
+                              Issuer: {cert.issuer} • Cost: {cert.cost} • Time: {cert.processingTime}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          <div style={styles.buttonGroup}>
-            <button onClick={() => setCurrentStep(2)} style={styles.secondaryButton}>
-              ← Back
-            </button>
-            <button onClick={handleCountrySubmit} style={styles.primaryButton}>
-              Continue →
-            </button>
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+                    🌍 Select Destination Country
+                  </h2>
+                  <p className="text-gray-400 mb-4">We'll show country-specific requirements and documents</p>
+
+                  <select
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    className="w-full p-4 border border-gray-600 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-manu-green"
+                  >
+                    <option value="">-- Select Country --</option>
+                    <option value="UAE">United Arab Emirates (UAE)</option>
+                    <option value="USA">United States (USA)</option>
+                    <option value="Germany">Germany (EU)</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setCurrentStep(2)}
+                    className="flex-1 bg-gray-700 text-white py-4 rounded-lg hover:bg-gray-600 transition-colors font-semibold flex items-center justify-center gap-2"
+                  >
+                    <ChevronLeft size={20} /> Back
+                  </button>
+                  <button
+                    onClick={handleCountrySubmit}
+                    className="flex-1 bg-manu-green text-white py-4 rounded-lg hover:bg-green-600 transition-colors font-semibold flex items-center justify-center gap-2"
+                  >
+                    Continue <ChevronRight size={20} />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1120,96 +1119,124 @@ ${JSON.stringify(data, null, 2)}
   // STEP 4: Show Country Documents + Ask Country-Specific Questions
   if (currentStep === 4 && countryInfo) {
     return (
-      <div style={styles.container}>
-        <div style={styles.progressBar}>
-          <div style={{ ...styles.progressFill, width: '56%' }}></div>
-        </div>
-        <div style={styles.stepIndicator}>Step 4 of 8</div>
+      <div className="min-h-screen bg-gray-900" style={{
+        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)'
+      }}>
+        <Header
+          user={user}
+          onPageChange={onPageChange}
+          onLogout={onLogout}
+          documentsUploaded={documentsUploaded}
+        />
 
-        {/* Show required documents */}
-        <div style={styles.alertBox}>
-          <h3 style={{ color: '#10b981', marginBottom: '15px' }}>
-            📄 Required Documents for {countryInfo.countryName}
-          </h3>
-
-          <div style={{ display: 'grid', gap: '8px' }}>
-            {countryInfo.documents.map((doc, idx) => (
-              <div key={idx} style={styles.docItem}>
-                ✅ {doc}
+        <div className="pt-16 min-h-screen flex items-center justify-center p-4">
+          <div className="w-full max-w-4xl">
+            <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 shadow-2xl">
+              <div className="mb-8">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                  <span>Step 4 of 8</span>
+                  <span>{getProgressPercentage()}% Complete</span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-manu-green h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${getProgressPercentage()}%` }}
+                  ></div>
+                </div>
               </div>
-            ))}
-          </div>
 
-          {countryInfo.ftaInfo.available && (
-            <div style={{ marginTop: '15px', padding: '12px', background: '#d1fae5', borderRadius: '8px' }}>
-              <strong>🎉 FTA Benefit Available!</strong>
-              <p style={{ fontSize: '14px', margin: '5px 0 0 0' }}>
-                {countryInfo.ftaInfo.name} - {countryInfo.ftaInfo.benefit}
-              </p>
-            </div>
-          )}
-        </div>
+              <div className="bg-green-900/20 border border-green-700 rounded-lg p-6 mb-6">
+                <h3 className="text-green-400 font-semibold mb-4 flex items-center gap-2 text-lg">
+                  📄 Required Documents for {countryInfo.countryName}
+                </h3>
 
-        {/* Country-specific questions */}
-        <div style={styles.card}>
-          <h2 style={styles.title}>❓ {countryInfo.countryName}-Specific Questions</h2>
+                <div className="grid gap-3">
+                  {countryInfo.documents.map((doc, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-3 bg-gray-700 rounded-lg">
+                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm">✓</span>
+                      </div>
+                      <span className="text-white">{doc}</span>
+                    </div>
+                  ))}
+                </div>
 
-          {countryInfo.specificQuestions.map((q, idx) => (
-            <div key={q.id} style={{ marginBottom: '20px' }}>
-              <label style={styles.label}>
-                {q.question}
-                {q.required && <span style={{ color: '#ef4444' }}> *</span>}
-              </label>
-              <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '8px' }}>
-                {q.helpText}
-              </p>
+                {countryInfo.ftaInfo.available && (
+                  <div className="mt-4 p-4 bg-green-900/30 rounded-lg border border-green-600">
+                    <strong className="text-green-400">🎉 FTA Benefit Available!</strong>
+                    <p className="text-green-300 text-sm mt-1">
+                      {countryInfo.ftaInfo.name} - {countryInfo.ftaInfo.benefit}
+                    </p>
+                  </div>
+                )}
+              </div>
 
-              {q.type === 'text' && (
-                <input
-                  type="text"
-                  value={countryAnswers[q.id] || ''}
-                  onChange={(e) => setCountryAnswers({
-                    ...countryAnswers,
-                    [q.id]: e.target.value
-                  })}
-                  style={styles.input}
-                />
-              )}
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+                  ❓ {countryInfo.countryName}-Specific Questions
+                </h2>
 
-              {q.type === 'yes_no' && (
-                <div style={{ display: 'flex', gap: '10px' }}>
+                {countryInfo.specificQuestions.map((q, idx) => (
+                  <div key={q.id} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+                    <label className="block text-white font-semibold mb-2">
+                      {q.question}
+                      {q.required && <span className="text-red-400 ml-1">*</span>}
+                    </label>
+                    <p className="text-gray-400 text-sm mb-3">{q.helpText}</p>
+
+                    {q.type === 'text' && (
+                      <input
+                        type="text"
+                        value={countryAnswers[q.id] || ''}
+                        onChange={(e) => setCountryAnswers({
+                          ...countryAnswers,
+                          [q.id]: e.target.value
+                        })}
+                        className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                      />
+                    )}
+
+                    {q.type === 'yes_no' && (
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => setCountryAnswers({ ...countryAnswers, [q.id]: 'yes' })}
+                          className={`flex-1 py-3 rounded-lg border transition-colors ${countryAnswers[q.id] === 'yes'
+                            ? 'bg-manu-green border-manu-green text-white'
+                            : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'
+                            }`}
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => setCountryAnswers({ ...countryAnswers, [q.id]: 'no' })}
+                          className={`flex-1 py-3 rounded-lg border transition-colors ${countryAnswers[q.id] === 'no'
+                            ? 'bg-red-600 border-red-600 text-white'
+                            : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'
+                            }`}
+                        >
+                          No
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                <div className="flex gap-3">
                   <button
-                    onClick={() => setCountryAnswers({ ...countryAnswers, [q.id]: 'yes' })}
-                    style={{
-                      ...styles.optionButton,
-                      background: countryAnswers[q.id] === 'yes' ? '#10b981' : '#f3f4f6',
-                      color: countryAnswers[q.id] === 'yes' ? 'white' : '#374151'
-                    }}
+                    onClick={() => setCurrentStep(3)}
+                    className="flex-1 bg-gray-700 text-white py-4 rounded-lg hover:bg-gray-600 transition-colors font-semibold flex items-center justify-center gap-2"
                   >
-                    Yes
+                    <ChevronLeft size={20} /> Back
                   </button>
                   <button
-                    onClick={() => setCountryAnswers({ ...countryAnswers, [q.id]: 'no' })}
-                    style={{
-                      ...styles.optionButton,
-                      background: countryAnswers[q.id] === 'no' ? '#ef4444' : '#f3f4f6',
-                      color: countryAnswers[q.id] === 'no' ? 'white' : '#374151'
-                    }}
+                    onClick={handleCountryQuestionsSubmit}
+                    className="flex-1 bg-manu-green text-white py-4 rounded-lg hover:bg-green-600 transition-colors font-semibold flex items-center justify-center gap-2"
                   >
-                    No
+                    Continue <ChevronRight size={20} />
                   </button>
                 </div>
-              )}
+              </div>
             </div>
-          ))}
-
-          <div style={styles.buttonGroup}>
-            <button onClick={() => setCurrentStep(3)} style={styles.secondaryButton}>
-              ← Back
-            </button>
-            <button onClick={handleCountryQuestionsSubmit} style={styles.primaryButton}>
-              Continue →
-            </button>
           </div>
         </div>
       </div>
@@ -1221,91 +1248,136 @@ ${JSON.stringify(data, null, 2)}
     const suggestedBuyers = getSuggestedBuyerDetails();
 
     return (
-      <div style={styles.container}>
-        <div style={styles.progressBar}>
-          <div style={{ ...styles.progressFill, width: '70%' }}></div>
-        </div>
-        <div style={styles.stepIndicator}>Step 5 of 8</div>
+      <div className="min-h-screen bg-gray-900" style={{
+        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)'
+      }}>
+        <Header
+          user={user}
+          onPageChange={onPageChange}
+          onLogout={onLogout}
+          documentsUploaded={documentsUploaded}
+        />
 
-        <div style={styles.card}>
-          <h2 style={styles.title}>👤 Buyer Details</h2>
+        <div className="pt-16 min-h-screen flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl">
+            <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 shadow-2xl">
+              <div className="mb-8">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                  <span>Step 5 of 8</span>
+                  <span>{getProgressPercentage()}% Complete</span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-manu-green h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${getProgressPercentage()}%` }}
+                  ></div>
+                </div>
+              </div>
 
-          {/* Buyer Suggestions */}
-          {suggestedBuyers.length > 0 && (
-            <div style={styles.suggestionsSection}>
-              <h4 style={styles.suggestionsTitle}>Suggested Buyers for {destination}:</h4>
-              {suggestedBuyers.map((buyer, index) => (
-                <div key={index} style={styles.suggestionCard}>
-                  <div style={styles.suggestionContent}>
-                    <strong>{buyer.name}</strong>
-                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '5px 0' }}>{buyer.address}</p>
-                    <p style={{ fontSize: '12px', color: '#9ca3af' }}>
-                      {buyer.email} • {buyer.phone} • Ref: {buyer.reference}
-                    </p>
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+                  👤 Buyer Details
+                </h2>
+
+                {suggestedBuyers.length > 0 && (
+                  <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+                    <h4 className="text-white font-semibold mb-3">Suggested Buyers for {destination}:</h4>
+                    <div className="space-y-3">
+                      {suggestedBuyers.map((buyer, index) => (
+                        <div key={index} className="bg-gray-600 rounded-lg p-3 flex items-center justify-between">
+                          <div className="flex-1">
+                            <strong className="text-white">{buyer.name}</strong>
+                            <p className="text-gray-300 text-sm mt-1">{buyer.address}</p>
+                            <p className="text-gray-400 text-xs mt-1">
+                              {buyer.email} • {buyer.phone} • Ref: {buyer.reference}
+                            </p>
+                          </div>
+                          <button
+                            className="bg-manu-green text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
+                            onClick={() => setBuyerDetails(buyer)}
+                          >
+                            Use This
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Buyer Company Name *</label>
+                    <input
+                      type="text"
+                      value={buyerDetails.name}
+                      onChange={(e) => setBuyerDetails({ ...buyerDetails, name: e.target.value })}
+                      placeholder="ABC Trading LLC"
+                      className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Buyer Address *</label>
+                    <textarea
+                      value={buyerDetails.address}
+                      onChange={(e) => setBuyerDetails({ ...buyerDetails, address: e.target.value })}
+                      placeholder="Full address with country"
+                      rows="3"
+                      className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-white font-semibold mb-2">Buyer Email</label>
+                      <input
+                        type="email"
+                        value={buyerDetails.email}
+                        onChange={(e) => setBuyerDetails({ ...buyerDetails, email: e.target.value })}
+                        placeholder="buyer@example.com"
+                        className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-white font-semibold mb-2">Buyer Phone</label>
+                      <input
+                        type="tel"
+                        value={buyerDetails.phone}
+                        onChange={(e) => setBuyerDetails({ ...buyerDetails, phone: e.target.value })}
+                        placeholder="+971-4-1234567"
+                        className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Buyer Reference</label>
+                    <input
+                      type="text"
+                      value={buyerDetails.reference}
+                      onChange={(e) => setBuyerDetails({ ...buyerDetails, reference: e.target.value })}
+                      placeholder="Buyer reference number"
+                      className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
                   <button
-                    style={styles.useSuggestionButton}
-                    onClick={() => setBuyerDetails(buyer)}
+                    onClick={() => setCurrentStep(4)}
+                    className="flex-1 bg-gray-700 text-white py-4 rounded-lg hover:bg-gray-600 transition-colors font-semibold flex items-center justify-center gap-2"
                   >
-                    Use This
+                    <ChevronLeft size={20} /> Back
+                  </button>
+                  <button
+                    onClick={handleBuyerSubmit}
+                    className="flex-1 bg-manu-green text-white py-4 rounded-lg hover:bg-green-600 transition-colors font-semibold flex items-center justify-center gap-2"
+                  >
+                    Continue <ChevronRight size={20} />
                   </button>
                 </div>
-              ))}
+              </div>
             </div>
-          )}
-
-          <label style={styles.label}>Buyer Company Name *</label>
-          <input
-            type="text"
-            value={buyerDetails.name}
-            onChange={(e) => setBuyerDetails({ ...buyerDetails, name: e.target.value })}
-            placeholder="ABC Trading LLC"
-            style={styles.input}
-          />
-
-          <label style={styles.label}>Buyer Address *</label>
-          <textarea
-            value={buyerDetails.address}
-            onChange={(e) => setBuyerDetails({ ...buyerDetails, address: e.target.value })}
-            placeholder="Full address with country"
-            rows="3"
-            style={styles.textarea}
-          />
-
-          <label style={styles.label}>Buyer Email</label>
-          <input
-            type="email"
-            value={buyerDetails.email}
-            onChange={(e) => setBuyerDetails({ ...buyerDetails, email: e.target.value })}
-            placeholder="buyer@example.com"
-            style={styles.input}
-          />
-
-          <label style={styles.label}>Buyer Phone</label>
-          <input
-            type="tel"
-            value={buyerDetails.phone}
-            onChange={(e) => setBuyerDetails({ ...buyerDetails, phone: e.target.value })}
-            placeholder="+971-4-1234567"
-            style={styles.input}
-          />
-
-          <label style={styles.label}>Buyer Reference</label>
-          <input
-            type="text"
-            value={buyerDetails.reference}
-            onChange={(e) => setBuyerDetails({ ...buyerDetails, reference: e.target.value })}
-            placeholder="Buyer reference number"
-            style={styles.input}
-          />
-
-          <div style={styles.buttonGroup}>
-            <button onClick={() => setCurrentStep(4)} style={styles.secondaryButton}>
-              ← Back
-            </button>
-            <button onClick={handleBuyerSubmit} style={styles.primaryButton}>
-              Continue →
-            </button>
           </div>
         </div>
       </div>
@@ -1318,145 +1390,187 @@ ${JSON.stringify(data, null, 2)}
     const suggestedProducts = getSuggestedProductDetails();
 
     return (
-      <div style={styles.container}>
-        <div style={styles.progressBar}>
-          <div style={{ ...styles.progressFill, width: '84%' }}></div>
-        </div>
-        <div style={styles.stepIndicator}>Step 6 of 8</div>
+      <div className="min-h-screen bg-gray-900" style={{
+        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)'
+      }}>
+        <Header
+          user={user}
+          onPageChange={onPageChange}
+          onLogout={onLogout}
+          documentsUploaded={documentsUploaded}
+        />
 
-        <div style={styles.card}>
-          <h2 style={styles.title}>📦 Product Details</h2>
+        <div className="pt-16 min-h-screen flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl">
+            <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 shadow-2xl">
+              <div className="mb-8">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                  <span>Step 6 of 8</span>
+                  <span>{getProgressPercentage()}% Complete</span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-manu-green h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${getProgressPercentage()}%` }}
+                  ></div>
+                </div>
+              </div>
 
-          {/* Product Suggestions */}
-          {suggestedProducts.length > 0 && (
-            <div style={styles.suggestionsSection}>
-              <h4 style={styles.suggestionsTitle}>Suggested Products for HSN {hsnCode}:</h4>
-              {suggestedProducts.map((product, index) => (
-                <div key={index} style={styles.suggestionCard}>
-                  <div style={styles.suggestionContent}>
-                    <strong>{product.description}</strong>
-                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '5px 0' }}>
-                      {product.quantity} {product.unit} × ${product.price} = ${(product.quantity * product.price).toFixed(2)}
-                    </p>
-                    <p style={{ fontSize: '12px', color: '#9ca3af' }}>
-                      Packaging: {product.packaging} • Net: {product.net_weight}KG • Gross: {product.gross_weight}KG
-                    </p>
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+                  📦 Product Details
+                </h2>
+
+                {suggestedProducts.length > 0 && (
+                  <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+                    <h4 className="text-white font-semibold mb-3">Suggested Products for HSN {hsnCode}:</h4>
+                    <div className="space-y-3">
+                      {suggestedProducts.map((product, index) => (
+                        <div key={index} className="bg-gray-600 rounded-lg p-3 flex items-center justify-between">
+                          <div className="flex-1">
+                            <strong className="text-white">{product.description}</strong>
+                            <p className="text-gray-300 text-sm mt-1">
+                              {product.quantity} {product.unit} × ${product.price} = ${(product.quantity * product.price).toFixed(2)}
+                            </p>
+                            <p className="text-gray-400 text-xs mt-1">
+                              Packaging: {product.packaging} • Net: {product.net_weight}KG • Gross: {product.gross_weight}KG
+                            </p>
+                          </div>
+                          <button
+                            className="bg-manu-green text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
+                            onClick={() => setProductDetails(product)}
+                          >
+                            Use This
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Product Description *</label>
+                    <input
+                      type="text"
+                      value={productDetails.description}
+                      onChange={(e) => setProductDetails({ ...productDetails, description: e.target.value })}
+                      placeholder="Red Chili Powder"
+                      className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-white font-semibold mb-2">Quantity *</label>
+                      <input
+                        type="number"
+                        value={productDetails.quantity}
+                        onChange={(e) => setProductDetails({ ...productDetails, quantity: e.target.value })}
+                        placeholder="1000"
+                        className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-white font-semibold mb-2">Unit</label>
+                      <select
+                        value={productDetails.unit}
+                        onChange={(e) => setProductDetails({ ...productDetails, unit: e.target.value })}
+                        className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-manu-green"
+                      >
+                        <option>KG</option>
+                        <option>MT</option>
+                        <option>PCS</option>
+                        <option>BOXES</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Price per Unit (USD) *</label>
+                    <input
+                      type="number"
+                      value={productDetails.price}
+                      onChange={(e) => setProductDetails({ ...productDetails, price: e.target.value })}
+                      placeholder="5.00"
+                      step="0.01"
+                      className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-white font-semibold mb-2">Net Weight (Kg)</label>
+                      <input
+                        type="number"
+                        value={productDetails.net_weight}
+                        onChange={(e) => setProductDetails({ ...productDetails, net_weight: e.target.value })}
+                        placeholder="Net weight"
+                        className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-white font-semibold mb-2">Gross Weight (Kg)</label>
+                      <input
+                        type="number"
+                        value={productDetails.gross_weight}
+                        onChange={(e) => setProductDetails({ ...productDetails, gross_weight: e.target.value })}
+                        placeholder="Gross weight"
+                        className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Packaging Type</label>
+                    <input
+                      type="text"
+                      value={productDetails.packaging}
+                      onChange={(e) => setProductDetails({ ...productDetails, packaging: e.target.value })}
+                      placeholder="10 cartons x 100 KG each"
+                      className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Measurements</label>
+                    <input
+                      type="text"
+                      value={productDetails.measurements}
+                      onChange={(e) => setProductDetails({ ...productDetails, measurements: e.target.value })}
+                      placeholder="Length x Width x Height"
+                      className="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-manu-green"
+                    />
+                  </div>
+                </div>
+
+                {totalValue > 0 && (
+                  <div className="bg-green-900/20 border border-green-700 rounded-lg p-4">
+                    <div className="flex justify-between items-center">
+                      <strong className="text-white">Total FOB Value:</strong>
+                      <span className="text-2xl font-bold text-green-400">
+                        ${totalValue}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
                   <button
-                    style={styles.useSuggestionButton}
-                    onClick={() => setProductDetails(product)}
+                    onClick={() => setCurrentStep(5)}
+                    className="flex-1 bg-gray-700 text-white py-4 rounded-lg hover:bg-gray-600 transition-colors font-semibold flex items-center justify-center gap-2"
                   >
-                    Use This
+                    <ChevronLeft size={20} /> Back
+                  </button>
+                  <button
+                    onClick={handleProductSubmit}
+                    className="flex-1 bg-manu-green text-white py-4 rounded-lg hover:bg-green-600 transition-colors font-semibold text-lg flex items-center justify-center gap-2"
+                  >
+                    🚀 Generate All Documents
                   </button>
                 </div>
-              ))}
+              </div>
             </div>
-          )}
-
-          <label style={styles.label}>Product Description *</label>
-          <input
-            type="text"
-            value={productDetails.description}
-            onChange={(e) => setProductDetails({ ...productDetails, description: e.target.value })}
-            placeholder="Red Chili Powder"
-            style={styles.input}
-          />
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-            <div>
-              <label style={styles.label}>Quantity *</label>
-              <input
-                type="number"
-                value={productDetails.quantity}
-                onChange={(e) => setProductDetails({ ...productDetails, quantity: e.target.value })}
-                placeholder="1000"
-                style={styles.input}
-              />
-            </div>
-
-            <div>
-              <label style={styles.label}>Unit</label>
-              <select
-                value={productDetails.unit}
-                onChange={(e) => setProductDetails({ ...productDetails, unit: e.target.value })}
-                style={styles.select}
-              >
-                <option>KG</option>
-                <option>MT</option>
-                <option>PCS</option>
-                <option>BOXES</option>
-              </select>
-            </div>
-          </div>
-
-          <label style={styles.label}>Price per Unit (USD) *</label>
-          <input
-            type="number"
-            value={productDetails.price}
-            onChange={(e) => setProductDetails({ ...productDetails, price: e.target.value })}
-            placeholder="5.00"
-            step="0.01"
-            style={styles.input}
-          />
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-            <div>
-              <label style={styles.label}>Net Weight (Kg)</label>
-              <input
-                type="number"
-                value={productDetails.net_weight}
-                onChange={(e) => setProductDetails({ ...productDetails, net_weight: e.target.value })}
-                placeholder="Net weight"
-                style={styles.input}
-              />
-            </div>
-
-            <div>
-              <label style={styles.label}>Gross Weight (Kg)</label>
-              <input
-                type="number"
-                value={productDetails.gross_weight}
-                onChange={(e) => setProductDetails({ ...productDetails, gross_weight: e.target.value })}
-                placeholder="Gross weight"
-                style={styles.input}
-              />
-            </div>
-          </div>
-
-          <label style={styles.label}>Packaging Type</label>
-          <input
-            type="text"
-            value={productDetails.packaging}
-            onChange={(e) => setProductDetails({ ...productDetails, packaging: e.target.value })}
-            placeholder="10 cartons x 100 KG each"
-            style={styles.input}
-          />
-
-          <label style={styles.label}>Measurements</label>
-          <input
-            type="text"
-            value={productDetails.measurements}
-            onChange={(e) => setProductDetails({ ...productDetails, measurements: e.target.value })}
-            placeholder="Length x Width x Height"
-            style={styles.input}
-          />
-
-          {totalValue > 0 && (
-            <div style={styles.totalBox}>
-              <strong>Total FOB Value:</strong>
-              <span style={{ fontSize: '24px', color: '#10b981' }}>
-                ${totalValue}
-              </span>
-            </div>
-          )}
-
-          <div style={styles.buttonGroup}>
-            <button onClick={() => setCurrentStep(5)} style={styles.secondaryButton}>
-              ← Back
-            </button>
-            <button onClick={handleProductSubmit} style={styles.generateButton}>
-              🚀 Generate All Documents
-            </button>
           </div>
         </div>
       </div>
@@ -1468,26 +1582,53 @@ ${JSON.stringify(data, null, 2)}
     const questions = getRelevantQuestions();
 
     return (
-      <div style={styles.container}>
-        <div style={styles.progressBar}>
-          <div style={{ ...styles.progressFill, width: '92%' }}></div>
-        </div>
-        <div style={styles.stepIndicator}>Step 7 of 8 - Document Details</div>
+      <div className="min-h-screen bg-gray-900" style={{
+        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)'
+      }}>
+        <Header
+          user={user}
+          onPageChange={onPageChange}
+          onLogout={onLogout}
+          documentsUploaded={documentsUploaded}
+        />
 
-        <div style={styles.card}>
-          <h2 style={styles.title}>📝 Additional Document Information</h2>
-          <p style={styles.subtitle}>
-            {questions.length - currentQuestion} questions remaining to complete your {countryInfo.documents.length} export documents
-          </p>
+        <div className="pt-16 min-h-screen flex items-center justify-center p-4">
+          <div className="w-full max-w-4xl">
+            <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 shadow-2xl">
+              <div className="mb-8">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                  <span>Step 7 of 8 - Document Details</span>
+                  <span>{getProgressPercentage()}% Complete</span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-manu-green h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${getProgressPercentage()}%` }}
+                  ></div>
+                </div>
+              </div>
 
-          {renderCurrentQuestion()}
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+                  📝 Additional Document Information
+                </h2>
+                <p className="text-gray-400 mb-6">
+                  {questions.length - currentQuestion} questions remaining to complete your {countryInfo.documents.length} export documents
+                </p>
 
-          {isGenerating && (
-            <div style={styles.loadingOverlay}>
-              <div style={styles.spinner}></div>
-              <p>Generating your export documents...</p>
+                {renderCurrentQuestion()}
+
+                {isGenerating && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 text-center">
+                      <div className="w-16 h-16 border-4 border-manu-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                      <p className="text-white text-lg">Generating your export documents...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     );
@@ -1496,78 +1637,138 @@ ${JSON.stringify(data, null, 2)}
   // STEP 8: Success & Download
   if (currentStep === 8) {
     return (
-      <div style={styles.container}>
-        <div style={styles.progressBar}>
-          <div style={{ ...styles.progressFill, width: '100%' }}></div>
-        </div>
-        <div style={styles.stepIndicator}>Step 8 of 8 - Complete!</div>
 
-        <div style={styles.card}>
-          <div style={styles.successHeader}>
-            <div style={styles.successIcon}>🎉</div>
-            <h2 style={styles.title}>Documents Generated Successfully!</h2>
-            <p style={styles.subtitle}>Your {generatedDocuments.length} export documents are ready for download</p>
-          </div>
+      <div className="min-h-screen bg-gray-900 notranslate" style={{
+        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)'
+      }}>
+        <Header
+          user={user}
+          onPageChange={onPageChange}
+          onLogout={onLogout}
+          documentsUploaded={documentsUploaded}
+        />
 
-          <div style={styles.documentsList}>
-            <h3 style={styles.documentsTitle}>Generated Documents:</h3>
-            {generatedDocuments.map((doc, index) => (
-              <div key={index} style={styles.documentItem}>
-                ✅ {doc.name}
+        <div className="pt-16 min-h-screen p-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 shadow-2xl">
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white text-2xl">🎉</span>
+                </div>
+                <h1 className="text-3xl font-bold text-white mb-2">Documents Generated Successfully!</h1>
+                <p className="text-gray-400 text-lg">Your {generatedDocuments.length} export documents are ready for download</p>
               </div>
-            ))}
-          </div>
 
-          {/* Template Previews */}
-          <div style={styles.templatePreviews}>
-            <h3 style={styles.documentsTitle}>Document Previews:</h3>
-            {generatedDocuments.map((doc, index) => (
-              <div key={index} style={styles.templatePreview}>
-                <h4>{doc.name}</h4>
-                <div style={styles.templateContainer}>
-                  {renderTemplateComponent(doc.id, doc.props)}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                {/* Left Panel - Documents List and Actions */}
+
+                <div className="space-y-6" >
+                  <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
+                    <h3 className="text-white font-semibold mb-4 text-lg">Generated Documents:</h3>
+                    <div className="space-y-2">
+                      {generatedDocuments.map((doc, index) => (
+                        <div key={index} className="flex items-center gap-3 p-3 bg-gray-600 rounded-lg">
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm">✓</span>
+                          </div>
+                          <span className="text-white flex-1">{doc.name}</span>
+                          <button
+                            onClick={() => setActiveDocIndex(index)}
+                            className={`px-3 py-1 rounded text-sm ${activeDocIndex === index
+                              ? 'bg-manu-green text-white'
+                              : 'bg-gray-500 text-gray-300 hover:bg-gray-400'
+                              }`}
+                          >
+                            Preview
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
+                    <h3 className="text-white font-semibold mb-4">Download Options</h3>
+                    <div className="space-y-3">
+                      <button
+                        onClick={downloadCombinedPDF}
+                        disabled={isDownloading}
+                        className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center justify-center gap-2 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                      >
+                        <Download size={20} />
+                        {isDownloading ? 'Generating PDF...' : 'Download All Documents as PDF'}
+                      </button>
+
+                      <button
+                        onClick={sendPdfViaEmail}
+                        disabled={isSendingEmail}
+                        className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center justify-center gap-2 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                      >
+                        <Mail size={20} />
+                        {isSendingEmail ? 'Sending...' : 'Send via Email'}
+                      </button>
+
+                      <button
+                        onClick={resetGenerator}
+                        className="w-full bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-500 transition-colors font-semibold flex items-center justify-center gap-2"
+                      >
+                        <Home size={20} />
+                        Create New Export
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Panel - Document Preview */}
+                <div className="bg-gray-700 rounded-lg p-6 border border-gray-600">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-semibold text-lg">Document Preview</h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400 text-sm">
+                        {activeDocIndex + 1} of {generatedDocuments.length}
+                      </span>
+                      <button
+                        onClick={() => setActiveDocIndex(prev => Math.max(0, prev - 1))}
+                        disabled={activeDocIndex === 0}
+                        className="p-2 rounded bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+                      <button
+                        onClick={() => setActiveDocIndex(prev => Math.min(generatedDocuments.length - 1, prev + 1))}
+                        disabled={activeDocIndex === generatedDocuments.length - 1}
+                        className="p-2 rounded bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-4 max-h-100 overflow-y-auto">
+                    {generatedDocuments.length > 0 && renderTemplateComponent(
+                      generatedDocuments[activeDocIndex].id,
+                      generatedDocuments[activeDocIndex].props
+                    )}
+                  </div>
+
+                  {generatedDocuments.length > 0 && (
+                    <button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(new Blob([
+                          JSON.stringify(generatedDocuments[activeDocIndex].props, null, 2)
+                        ], { type: 'application/json' }));
+                        link.download = `${generatedDocuments[activeDocIndex].name.replace(/\s+/g, '_')}_data.json`;
+                        link.click();
+                      }}
+                      className="w-full mt-4 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-500 transition-colors text-sm"
+                    >
+                      Download JSON Data
+                    </button>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div style={styles.downloadSection}>
-            <button
-              onClick={downloadCombinedPDF}
-              style={styles.downloadButton}
-              disabled={isDownloading}
-            >
-              {isDownloading ? '⏳ Generating PDF...' : '📥 Download All Documents as Single PDF'}
-            </button>
-            <p style={styles.downloadHint}>All {generatedDocuments.length} documents will be combined into one PDF file</p>
-          </div>
-
-          <div style={styles.actions}>
-            <button
-              style={styles.secondaryButton}
-              onClick={() => {
-                // Reset for new export
-                setCurrentStep(1);
-                setGeneratedDocuments([]);
-                setUserInputs({});
-                setCurrentQuestion(0);
-                setCountryAnswers({});
-                setIecNumber('');
-                setHsnCode('');
-                setCertificates(null);
-                setDestination('');
-                setCountryInfo(null);
-                setBuyerDetails({
-                  name: '', address: '', email: '', phone: '', reference: ''
-                });
-                setProductDetails({
-                  description: '', quantity: '', unit: 'KG', price: '', packaging: '',
-                  net_weight: '', gross_weight: '', measurements: ''
-                });
-              }}
-            >
-              Create New Export
-            </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1575,380 +1776,6 @@ ${JSON.stringify(data, null, 2)}
   }
 
   return null;
-}
-
-// Enhanced Styles
-const styles = {
-  container: {
-    padding: '40px 20px',
-    maxWidth: '800px',
-    margin: '0 auto',
-    fontFamily: 'system-ui, -apple-system, sans-serif'
-  },
-  progressBar: {
-    width: '100%',
-    height: '8px',
-    background: '#e5e7eb',
-    borderRadius: '4px',
-    marginBottom: '10px',
-    overflow: 'hidden'
-  },
-  progressFill: {
-    height: '100%',
-    background: 'linear-gradient(90deg, #10b981, #059669)',
-    transition: 'width 0.3s ease'
-  },
-  stepIndicator: {
-    textAlign: 'center',
-    fontSize: '14px',
-    color: '#6b7280',
-    marginBottom: '30px'
-  },
-  card: {
-    background: 'white',
-    padding: '30px',
-    borderRadius: '16px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    position: 'relative'
-  },
-  successBox: {
-    background: '#d1fae5',
-    padding: '20px',
-    borderRadius: '12px',
-    marginBottom: '20px',
-    border: '2px solid #10b981'
-  },
-  alertBox: {
-    background: '#eff6ff',
-    padding: '20px',
-    borderRadius: '12px',
-    marginBottom: '20px',
-    border: '2px solid #3b82f6'
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    marginBottom: '10px',
-    color: '#1f2937',
-    textAlign: 'center'
-  },
-  subtitle: {
-    fontSize: '16px',
-    color: '#6b7280',
-    marginBottom: '25px',
-    textAlign: 'center'
-  },
-  input: {
-    width: '100%',
-    padding: '12px',
-    fontSize: '16px',
-    border: '2px solid #e5e7eb',
-    borderRadius: '8px',
-    marginBottom: '15px',
-    outline: 'none'
-  },
-  textarea: {
-    width: '100%',
-    padding: '12px',
-    fontSize: '16px',
-    border: '2px solid #e5e7eb',
-    borderRadius: '8px',
-    marginBottom: '15px',
-    fontFamily: 'inherit',
-    outline: 'none',
-    resize: 'vertical'
-  },
-  select: {
-    width: '100%',
-    padding: '12px',
-    fontSize: '16px',
-    border: '2px solid #e5e7eb',
-    borderRadius: '8px',
-    marginBottom: '15px',
-    outline: 'none',
-    cursor: 'pointer'
-  },
-  label: {
-    display: 'block',
-    fontWeight: '600',
-    marginBottom: '8px',
-    color: '#374151'
-  },
-  buttonGroup: {
-    display: 'flex',
-    gap: '10px',
-    marginTop: '20px'
-  },
-  primaryButton: {
-    flex: 2,
-    padding: '15px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    background: '#10b981',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer'
-  },
-  secondaryButton: {
-    flex: 1,
-    padding: '15px',
-    fontSize: '16px',
-    background: '#6b7280',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer'
-  },
-  generateButton: {
-    flex: 2,
-    padding: '15px',
-    fontSize: '18px',
-    fontWeight: 'bold',
-    background: 'linear-gradient(135deg, #10b981, #059669)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    boxShadow: '0 4px 6px rgba(16, 185, 129, 0.3)'
-  },
-  hint: {
-    fontSize: '14px',
-    color: '#9ca3af',
-    marginTop: '10px',
-    textAlign: 'center'
-  },
-  certCard: {
-    padding: '15px',
-    background: 'white',
-    borderRadius: '8px',
-    marginBottom: '10px',
-    border: '1px solid #e5e7eb'
-  },
-  docItem: {
-    padding: '10px',
-    background: 'white',
-    borderRadius: '6px',
-    fontSize: '14px'
-  },
-  optionButton: {
-    flex: 1,
-    padding: '10px',
-    fontSize: '14px',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: '500'
-  },
-  totalBox: {
-    padding: '20px',
-    background: '#f0fdf4',
-    borderRadius: '8px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '15px',
-    border: '2px solid #10b981'
-  },
-  questionCard: {
-    background: '#f8fafc',
-    padding: '25px',
-    borderRadius: '12px',
-    border: '2px solid #e2e8f0'
-  },
-  questionTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    marginBottom: '15px',
-    color: '#1e293b'
-  },
-  optionsGrid: {
-    display: 'grid',
-    gap: '10px',
-    marginBottom: '15px'
-  },
-  questionActions: {
-    marginTop: '20px'
-  },
-  nextButton: {
-    width: '100%',
-    padding: '15px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    background: '#10b981',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer'
-  },
-  progress: {
-    marginTop: '20px',
-    background: '#e2e8f0',
-    borderRadius: '2px',
-    overflow: 'hidden'
-  },
-  successHeader: {
-    textAlign: 'center',
-    marginBottom: '30px'
-  },
-  successIcon: {
-    fontSize: '60px',
-    marginBottom: '20px'
-  },
-  documentsList: {
-    background: '#f0fdf4',
-    padding: '20px',
-    borderRadius: '8px',
-    marginBottom: '25px'
-  },
-  documentsTitle: {
-    marginBottom: '15px',
-    color: '#065f46'
-  },
-  documentItem: {
-    padding: '10px',
-    background: 'white',
-    marginBottom: '8px',
-    borderRadius: '6px',
-    border: '1px solid #dcfce7'
-  },
-  templatePreviews: {
-    marginBottom: '25px'
-  },
-  templatePreview: {
-    marginBottom: '30px',
-    padding: '20px',
-    border: '2px solid #e5e7eb',
-    borderRadius: '8px',
-    background: '#fafafa'
-  },
-  templateContainer: {
-    maxWidth: '100%',
-    overflow: 'auto'
-  },
-  downloadSection: {
-    textAlign: 'center',
-    marginBottom: '25px'
-  },
-  downloadButton: {
-    width: '100%',
-    padding: '20px',
-    fontSize: '18px',
-    fontWeight: 'bold',
-    background: 'linear-gradient(135deg, #10b981, #059669)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    cursor: 'pointer',
-    marginBottom: '10px'
-  },
-  downloadHint: {
-    fontSize: '14px',
-    color: '#6b7280'
-  },
-  actions: {
-    display: 'flex',
-    gap: '10px'
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(255,255,255,0.9)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '16px'
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    border: '4px solid #e2e8f0',
-    borderTop: '4px solid #10b981',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-    marginBottom: '15px'
-  },
-  // New styles for suggestions
-  suggestionChip: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    background: '#f0f9ff',
-    border: '1px solid #bae6fd',
-    borderRadius: '8px',
-    padding: '12px 15px',
-    marginBottom: '15px'
-  },
-  suggestionText: {
-    fontSize: '14px',
-    color: '#0369a1',
-    fontWeight: '500'
-  },
-  useSuggestionButton: {
-    background: '#0ea5e9',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    padding: '6px 12px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  },
-  suggestionsSection: {
-    background: '#f8fafc',
-    padding: '15px',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    border: '1px solid #e2e8f0'
-  },
-  suggestionsTitle: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#475569',
-    marginBottom: '10px'
-  },
-  suggestionCard: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    background: 'white',
-    border: '1px solid #e2e8f0',
-    borderRadius: '6px',
-    padding: '12px',
-    marginBottom: '8px'
-  },
-  suggestionContent: {
-    flex: 1
-  },
-  portSuggestions: {
-    background: 'white',
-    border: '1px solid #e5e7eb',
-    borderRadius: '0 0 8px 8px',
-    marginTop: '-15px',
-    maxHeight: '150px',
-    overflowY: 'auto'
-  },
-  portSuggestion: {
-    padding: '10px 12px',
-    borderBottom: '1px solid #f3f4f6',
-    cursor: 'pointer',
-    fontSize: '14px'
-  }
-};
-
-// Add CSS animation
-const styleSheet = document.styleSheets[0];
-if (styleSheet) {
-  styleSheet.insertRule(`
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  `, styleSheet.cssRules.length);
 }
 
 export default ExtendedSmartDocGenerator;

@@ -30,3 +30,111 @@
   overflow-x: auto;
   box-shadow: 0 2px 12px #0001;
 }
+
+/* ============================================
+   Google Translate - Hide default elements 
+   ============================================ */
+.goog-te-banner-frame {
+  display: none !important;
+}
+
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+body.translated-ltr {
+  top: 0 !important;
+}
+
+.skiptranslate {
+  display: none !important;
+}
+
+#google_translate_element {
+  display: none !important;
+}
+
+.goog-logo-link {
+  display: none !important;
+}
+
+.goog-te-gadget {
+  color: transparent !important;
+}
+
+.goog-te-combo {
+  display: none !important;
+}
+
+/* Keep certain elements untranslated */
+.notranslate {
+  /* Add this class to elements you don't want translated */
+}
+
+/* ============================================
+   Telugu Translation - Font Size Adjustment
+   ============================================ */
+
+/* When Telugu is active, reduce font sizes */
+body.telugu-active {
+  font-size: 90% !important;
+}
+
+/* Adjust headings */
+body.telugu-active h1 {
+  font-size: 1.8em !important;
+}
+
+body.telugu-active h2 {
+  font-size: 1.5em !important;
+}
+
+body.telugu-active h3 {
+  font-size: 1.3em !important;
+}
+
+body.telugu-active h4 {
+  font-size: 1.1em !important;
+}
+
+/* Adjust buttons */
+body.telugu-active button {
+  font-size: 0.9em !important;
+  padding: 8px 14px !important;
+}
+
+/* Adjust inputs and textareas */
+body.telugu-active input,
+body.telugu-active textarea,
+body.telugu-active select {
+  font-size: 0.9em !important;
+}
+
+/* Adjust navigation */
+body.telugu-active nav,
+body.telugu-active .nav-menu {
+  font-size: 0.9em !important;
+}
+
+/* Prevent overflow */
+body.telugu-active * {
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+/* Adjust line height */
+body.telugu-active {
+  line-height: 1.5 !important;
+}
+
+/* Adjust specific containers that might overflow */
+body.telugu-active .card,
+body.telugu-active .box,
+body.telugu-active .container {
+  font-size: 0.9em !important;
+}

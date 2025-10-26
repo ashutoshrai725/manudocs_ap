@@ -7,12 +7,12 @@ import AuthPage from './components/Auth/AuthPage.jsx';
 import DocumentUploadPage from './components/Upload/DocumentUploadPage.jsx';
 import AIAgentPage from './components/AIAgent/AIAgentPage.jsx';
 import AIAgent2Page from './components/AIAgent/AIAgent2Page.jsx';
-import LoadingSpinner from './components/common/LoadingSpinner.jsx'; // You can create this component
+import LoadingSpinner from './components/common/LoadingSpinner.jsx';
 import ExportReadinessIndex from './components/ExportReadinessIndex';
 import SmartDocGenerator from './components/SmartDocGenerator';
 import DutyCalculator from './components/Dutycalculator/DutyCalculator.jsx';
-
 import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
+
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || import.meta.env.REACT_APP_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.REACT_APP_SUPABASE_ANON_KEY
@@ -31,7 +31,7 @@ const PublicRoute = ({ children, user }) => {
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [documentsUploaded, setDocumentsUploaded] = useState(true); // Add this state
+  const [documentsUploaded, setDocumentsUploaded] = useState(true);
 
   useEffect(() => {
     // Check for existing session
@@ -89,10 +89,7 @@ function App() {
   };
 
   const handlePageChange = (page) => {
-    // This function can be used for programmatic navigation
-    // For now, we'll use it for any page-specific logic
     console.log('Page change requested:', page);
-    // You can add navigation logic here if needed
   };
 
   // Show loading spinner while checking auth state
@@ -170,6 +167,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/duty-calculator"
             element={
@@ -181,12 +179,43 @@ function App() {
             }
           />
 
-          <Route path="/export-readiness-index" element={<ExportReadinessIndex user={user} />} />
-          <Route path="/smart-generate" element={<SmartDocGenerator />} />
+          {/* Fixed SmartDocGenerator Route */}
+          <Route
+            path="/smart-generate"
+            element={
+              <ProtectedRoute user={user}>
+                <SmartDocGenerator
+                  user={user}
+                  onPageChange={handlePageChange}
+                  onLogout={handleLogout}
+                  documentsUploaded={documentsUploaded}
+                />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/export-readiness-index"
+            element={
+              <ProtectedRoute user={user}>
+                <ExportReadinessIndex user={user} />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/analytics"
-            element={<AnalyticsDashboard user={user} onPageChange={handlePageChange} onLogout={handleLogout} />}
+            element={
+              <ProtectedRoute user={user}>
+                <AnalyticsDashboard
+                  user={user}
+                  onPageChange={handlePageChange}
+                  onLogout={handleLogout}
+                />
+              </ProtectedRoute>
+            }
           />
+
           {/* Catch all route - redirect to landing */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

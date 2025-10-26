@@ -1,0 +1,64 @@
+.translate-button-container {
+    display: flex;
+    align-items: center;
+}
+
+.translate-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #ffffff;
+    color: #333;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.translate-btn:hover {
+    background: #f5f5f5;
+    border-color: #01C023;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.translate-btn.translated {
+    background: #01C023;
+    color: white;
+    border-color: #01C023;
+}
+
+.translate-btn.translated:hover {
+    background: #00a61d;
+    border-color: #00a61d;
+}
+
+.translate-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.translate-text {
+    font-size: 14px;
+    line-height: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .translate-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .translate-icon {
+        font-size: 16px;
+    }
+
+    .translate-text {
+        font-size: 13px;
+    }
+}
