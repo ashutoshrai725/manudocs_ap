@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { fetchPersonalizedExportNews, fetchNewsByCategory } from '../../services/newsService';
 import Header from '../LandingPage/Header';
+import { eriStorageService } from '../../services/eriStorageService';
 
 function AnalyticsDashboard({ user, onPageChange, onLogout }) {
   const navigate = useNavigate();
@@ -55,6 +56,22 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
   ];
 
   useEffect(() => {
+    // Load the stored ERI score
+    const storedScore = eriStorageService.getScore();
+
+    if (storedScore !== null) {
+      // Use the stored score directly
+      setReadinessScore(storedScore);
+    } else {
+      // No stored score found, use the animated loading as fallback
+      const interval = setInterval(() => {
+        setReadinessScore(prev => (prev < 45 ? prev + 1 : 45)); // Lower default if no score
+      }, 20);
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  useEffect(() => {
     const loadNews = async () => {
       setLoadingNews(true);
       const newsData = await fetchPersonalizedExportNews(
@@ -71,12 +88,7 @@ function AnalyticsDashboard({ user, onPageChange, onLogout }) {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setReadinessScore(prev => (prev < 85 ? prev + 1 : 85));
-    }, 20);
-    return () => clearInterval(interval);
-  }, []);
+
 
   const formatCurrency = (amount) => {
     if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;

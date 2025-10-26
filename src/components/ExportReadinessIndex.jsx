@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, HelpCircle, ArrowRight, ArrowLeft, Download, RefreshCw, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { eriStorageService } from '../services/eriStorageService';
 
 const eriData = {
     metadata: {
@@ -500,6 +501,8 @@ const ExportReadinessIndex = ({ user }) => {
 
         // Calculate percentage score
         const percentageScore = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;
+
+        eriStorageService.saveScore(percentageScore);
 
         setScore(percentageScore);
         setCategoryScores(catScores);
