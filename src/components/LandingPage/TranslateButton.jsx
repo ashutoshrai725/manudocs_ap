@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './TranslateButton.css';
 
-const TranslateButton = () => {
+const TranslateButton = ({ isMobile = false }) => {
     const [isTranslated, setIsTranslated] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -82,20 +82,22 @@ const TranslateButton = () => {
     };
 
     return (
-        <div className="translate-button-container">
+        <div className={`translate-button-container ${isMobile ? 'mobile' : ''}`}>
             <div id="google_translate_element" style={{ display: 'none' }}></div>
 
             <button
-                className={`translate-btn ${isTranslated ? 'translated' : ''}`}
+                className={`translate-btn ${isTranslated ? 'translated' : ''} ${isMobile ? 'mobile' : ''}`}
                 onClick={toggleTranslation}
                 title={isTranslated ? 'Switch to English' : 'Translate to Telugu'}
             >
                 <span className="translate-icon">
                     {isTranslated ? '🇮🇳' : '🌐'}
                 </span>
-                <span className="translate-text">
-                    {isTranslated ? 'తెలుగు' : 'తెలుగు'}
-                </span>
+                {!isMobile && (
+                    <span className="translate-text">
+                        {isTranslated ? 'తెలుగు' : 'తెలుగు'}
+                    </span>
+                )}
             </button>
         </div>
     );

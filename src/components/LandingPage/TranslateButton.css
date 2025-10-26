@@ -19,6 +19,18 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Mobile-specific styles */
+.translate-btn.mobile {
+    padding: 6px 8px;
+    gap: 4px;
+    min-width: auto;
+}
+
+.translate-button-container.mobile .translate-text {
+    display: none;
+    /* Hide text on mobile */
+}
+
 .translate-btn:hover {
     background: #f5f5f5;
     border-color: #01C023;
@@ -49,9 +61,13 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-    .translate-btn {
+    .translate-btn:not(.mobile) {
         padding: 6px 12px;
         font-size: 13px;
+    }
+
+    .translate-btn.mobile {
+        padding: 4px 6px;
     }
 
     .translate-icon {
@@ -60,5 +76,16 @@
 
     .translate-text {
         font-size: 13px;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .translate-btn.mobile {
+        padding: 3px 5px;
+    }
+
+    .translate-icon {
+        font-size: 14px;
     }
 }
