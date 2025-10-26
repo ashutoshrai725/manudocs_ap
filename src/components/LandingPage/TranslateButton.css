@@ -1,6 +1,11 @@
 .translate-button-container {
     display: flex;
     align-items: center;
+    position: relative;
+}
+
+.translate-dropdown {
+    position: relative;
 }
 
 .translate-btn {
@@ -17,6 +22,7 @@
     font-weight: 500;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    min-height: 40px;
 }
 
 /* Mobile-specific styles */
@@ -24,11 +30,11 @@
     padding: 6px 8px;
     gap: 4px;
     min-width: auto;
+    min-height: 32px;
 }
 
 .translate-button-container.mobile .translate-text {
     display: none;
-    /* Hide text on mobile */
 }
 
 .translate-btn:hover {
@@ -49,14 +55,146 @@
     border-color: #00a61d;
 }
 
+/* Icon container */
+.icon-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Custom image icon styles */
 .translate-icon {
-    font-size: 18px;
-    line-height: 1;
+    display: block;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
+
+/* Fallback styles (hidden by default) */
+.translate-fallback {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+/* India flag image */
+.india-flag {
+    width: 20px;
+    height: 15px;
+    border-radius: 2px;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* India fallback */
+.india-fallback {
+    font-size: 16px;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* EN symbol image */
+.en-symbol {
+    width: 22px;
+    height: 16px;
+    border-radius: 3px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* EN fallback */
+.en-fallback {
+    font-size: 11px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #012169, #C8102E);
+    color: white;
+    width: 22px;
+    height: 16px;
+    border-radius: 3px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+/* Dropdown arrow */
+.dropdown-arrow {
+    font-size: 10px;
+    transition: transform 0.3s ease;
+    margin-left: 4px;
+    color: #666;
+}
+
+.dropdown-arrow.open {
+    transform: rotate(180deg);
+}
+
+.translate-btn.translated .dropdown-arrow {
+    color: white;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 140px;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+/* Dropdown items */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: #f8f9fa;
+}
+
+.dropdown-item.active {
+    background: #f0f8ff;
+    font-weight: 600;
+}
+
+.dropdown-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 18px;
+}
+
+.dropdown-text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.checkmark {
+    color: #01C023;
+    font-weight: bold;
+    font-size: 16px;
 }
 
 .translate-text {
     font-size: 14px;
     line-height: 1;
+    font-weight: 600;
 }
 
 /* Responsive design */
@@ -64,17 +202,50 @@
     .translate-btn:not(.mobile) {
         padding: 6px 12px;
         font-size: 13px;
+        min-height: 36px;
     }
 
     .translate-btn.mobile {
         padding: 4px 6px;
+        min-height: 30px;
     }
 
-    .translate-icon {
-        font-size: 16px;
+    .india-flag {
+        width: 18px;
+        height: 13px;
+    }
+
+    .en-symbol {
+        width: 20px;
+        height: 14px;
+    }
+
+    .india-fallback {
+        font-size: 14px;
+    }
+
+    .en-fallback {
+        font-size: 10px;
+        width: 20px;
+        height: 14px;
     }
 
     .translate-text {
+        font-size: 13px;
+    }
+
+    .dropdown-menu {
+        right: 0;
+        left: auto;
+        min-width: 130px;
+    }
+
+    .dropdown-item {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .dropdown-text {
         font-size: 13px;
     }
 }
@@ -83,9 +254,38 @@
 @media (max-width: 480px) {
     .translate-btn.mobile {
         padding: 3px 5px;
+        min-height: 28px;
     }
 
-    .translate-icon {
-        font-size: 14px;
+    .india-flag {
+        width: 16px;
+        height: 12px;
     }
+
+    .en-symbol {
+        width: 18px;
+        height: 13px;
+    }
+
+    .india-fallback {
+        font-size: 12px;
+    }
+
+    .en-fallback {
+        font-size: 9px;
+        width: 18px;
+        height: 13px;
+    }
+}
+
+/* Loading state */
+.translate-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.translate-btn:disabled:hover {
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
