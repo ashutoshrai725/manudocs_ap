@@ -173,7 +173,7 @@ const HeroSection = ({ isMobile, user }) => {
                         </motion.div>
                     )}
 
-                    <div className="space-y-3">
+                    <div className="space-y-3 lg:ml-10">
                         <motion.h1
                             className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold leading-tight"
                             initial="hidden"
@@ -200,7 +200,7 @@ const HeroSection = ({ isMobile, user }) => {
                                         }
                                     }
                                 }}
-                                className="overflow-hidden"
+                                className="overflow-hidden  lg:ml-4"
                             >
                                 AI-Powered
                             </motion.div>
@@ -218,7 +218,7 @@ const HeroSection = ({ isMobile, user }) => {
                                         }
                                     }
                                 }}
-                                className="overflow-hidden"
+                                className="overflow-hidden ml-6"
                             >
                                 <motion.span
                                     className="text-manu-green bg-gradient-to-r from-manu-green via-green-300 to-green-500 bg-clip-text text-transparent bg-[length:200%_auto]"
@@ -282,14 +282,17 @@ const HeroSection = ({ isMobile, user }) => {
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.7 + index * 0.1 }}
-                                className="flex flex-col items-start"
+                                className="flex flex-col items-start lg:ml-10"
                             >
-                                <div className="text-lg sm:text-xl md:text-2xl font-bold text-white">
-                                    {stat.value}
+                                <div className="text-center">
+                                    <div className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+                                        {stat.value}
+                                    </div>
+                                    <div className="text-xs sm:text-sm text-gray-300 font-medium">
+                                        {stat.label}
+                                    </div>
                                 </div>
-                                <div className="text-xs sm:text-sm text-gray-300 font-medium">
-                                    {stat.label}
-                                </div>
+
                             </motion.div>
                         ))}
                     </motion.div>
@@ -299,62 +302,61 @@ const HeroSection = ({ isMobile, user }) => {
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.8 }}
-                        className="flex flex-col sm:flex-row gap-3 pt-4 lg:ml-16"
+                        className="flex flex-col sm:flex-row gap-4 pt-4 lg:ml-16"
                     >
                         {user ? (
                             <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
+                                whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(34,197,94,0.6)" }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={() => handleNavigation('/analytics', true)}
-                                className="group relative bg-gradient-to-r from-manu-green to-green-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg overflow-hidden min-w-[140px]"
+                                className="relative px-7 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-green-500 via-green-600 to-green-400 shadow-md min-w-[160px] transition-all duration-300"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-manu-green opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                <span className="relative flex items-center justify-center gap-2 text-sm">
+                                <span className="relative flex items-center justify-center gap-2 text-base font-semibold">
                                     Analytics Dashboard
-                                    <BarChart3 size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
+                                    <BarChart3 size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
                                 </span>
                             </motion.button>
                         ) : (
                             <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
+                                whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(34,197,94,0.6)" }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={() => handleNavigation('/auth')}
-                                className="group relative bg-gradient-to-r from-manu-green to-green-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg overflow-hidden min-w-[140px]"
+                                className="relative px-7 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-green-600 via-green-500 to-green-400 shadow-md min-w-[160px] transition-all duration-300"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-manu-green opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                <span className="relative flex items-center justify-center gap-2 text-sm">
+                                <span className="relative flex items-center justify-center gap-2 text-base font-semibold">
                                     Get Started Free
-                                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
+                                    <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
                                 </span>
                             </motion.button>
                         )}
 
                         {/* New ERI Button */}
                         <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                            whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(37,99,235,0.5)" }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => handleNavigation('/export-readiness-index', true)}
-                            className="group relative bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg overflow-hidden min-w-[140px]"
+                            className="relative px-7 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-md min-w-[160px] transition-all duration-300"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            <span className="relative flex flex-col items-center justify-center gap-0 text-sm">
+                            <span className="relative flex flex-col items-center justify-center gap-0 text-base font-semibold">
                                 ERI
                                 <sub className="text-xs font-normal opacity-90">Export Readiness Index</sub>
                             </span>
                         </motion.button>
 
+                        {/* Demo / Generate Button */}
                         <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                            whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(34,197,94,0.3)" }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={handleDemoClick}
-                            className="group relative bg-white/10 backdrop-blur-md text-white px-6 py-3 rounded-xl font-semibold border border-white/20 hover:bg-white/20 transition-all duration-300 min-w-[140px]"
+                            className="relative px-7 py-3 rounded-2xl font-semibold text-green-600 bg-white/90 backdrop-blur-md border border-green-600 hover:bg-white min-w-[160px] transition-all duration-300"
                         >
-                            <span className="flex items-center justify-center gap-2 text-sm">
+                            <span className="flex items-center justify-center gap-2 text-base font-semibold">
                                 {user ? 'Generate Documents' : 'Watch Demo'}
-                                <Play size={14} />
+                                <Play size={16} className="group-hover:scale-110 transition-transform duration-300" />
                             </span>
                         </motion.button>
                     </motion.div>
+
                 </motion.div>
 
                 {/* Right Side - AI Agent */}
