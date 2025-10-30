@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Play, Pause, ArrowRight, Sparkles } from 'lucide-react';
+import { Search, Play, Pause, ArrowRight, Sparkles, BarChart3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const HeroSection = ({ isMobile, user }) => {
@@ -8,6 +8,7 @@ const HeroSection = ({ isMobile, user }) => {
     const [isPlaying, setIsPlaying] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+    const [showDemoVideo, setShowDemoVideo] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const videoRef = useRef(null);
 
@@ -68,6 +69,16 @@ const HeroSection = ({ isMobile, user }) => {
     };
 
     const closeAuthPrompt = () => setShowAuthPrompt(false);
+
+    const handleDemoClick = () => {
+        if (user) {
+            handleNavigation('/smart-generate', true);
+        } else {
+            setShowDemoVideo(true);
+        }
+    };
+
+    const closeDemoVideo = () => setShowDemoVideo(false);
 
     // Optimized animations
     const containerVariants = {
@@ -139,7 +150,6 @@ const HeroSection = ({ isMobile, user }) => {
 
             {/* Video Controls */}
 
-
             {/* Hero Content */}
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between min-h-screen w-full px-4 sm:px-6 lg:px-8 py-6 mt-8">
                 {/* Left Side - Content */}
@@ -195,7 +205,7 @@ const HeroSection = ({ isMobile, user }) => {
                                 AI-Powered
                             </motion.div>
 
-                            {/* Export Documentation */}
+                            {/* Export Import Console */}
                             <motion.div
                                 variants={{
                                     hidden: { opacity: 0, scale: 0.9 },
@@ -221,7 +231,7 @@ const HeroSection = ({ isMobile, user }) => {
                                         ease: "linear"
                                     }}
                                 >
-                                    Export Documentation
+                                    Export Import Console
                                 </motion.span>
                             </motion.div>
 
@@ -291,18 +301,33 @@ const HeroSection = ({ isMobile, user }) => {
                         transition={{ delay: 0.8 }}
                         className="flex flex-col sm:flex-row gap-3 pt-4 lg:ml-16"
                     >
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => handleNavigation('/upload', true)}
-                            className="group relative bg-gradient-to-r from-manu-green to-green-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg overflow-hidden min-w-[140px]"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-manu-green opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            <span className="relative flex items-center justify-center gap-2 text-sm">
-                                {user ? 'Upload Documents' : 'Get Started Free'}
-                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
-                            </span>
-                        </motion.button>
+                        {user ? (
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNavigation('/analytics', true)}
+                                className="group relative bg-gradient-to-r from-manu-green to-green-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg overflow-hidden min-w-[140px]"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-manu-green opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <span className="relative flex items-center justify-center gap-2 text-sm">
+                                    Analytics Dashboard
+                                    <BarChart3 size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
+                                </span>
+                            </motion.button>
+                        ) : (
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNavigation('/auth')}
+                                className="group relative bg-gradient-to-r from-manu-green to-green-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg overflow-hidden min-w-[140px]"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-manu-green opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <span className="relative flex items-center justify-center gap-2 text-sm">
+                                    Get Started Free
+                                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
+                                </span>
+                            </motion.button>
+                        )}
 
                         {/* New ERI Button */}
                         <motion.button
@@ -318,11 +343,10 @@ const HeroSection = ({ isMobile, user }) => {
                             </span>
                         </motion.button>
 
-
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => handleNavigation('/smart-generate', true)}
+                            onClick={handleDemoClick}
                             className="group relative bg-white/10 backdrop-blur-md text-white px-6 py-3 rounded-xl font-semibold border border-white/20 hover:bg-white/20 transition-all duration-300 min-w-[140px]"
                         >
                             <span className="flex items-center justify-center gap-2 text-sm">
@@ -473,6 +497,46 @@ const HeroSection = ({ isMobile, user }) => {
                             <p className="text-xs text-gray-400">
                                 Redirecting to authentication...
                             </p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Demo Video Modal */}
+            <AnimatePresence>
+                {showDemoVideo && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+                        onClick={closeDemoVideo}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 10 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 10 }}
+                            className="bg-gray-900 rounded-2xl p-4 max-w-4xl w-full mx-4 shadow-2xl border border-manu-green/20"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-bold text-white">ManuDocs AP Demo Video</h3>
+                                <button
+                                    onClick={closeDemoVideo}
+                                    className="text-gray-400 hover:text-white transition-colors duration-200"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            <div className="relative aspect-video w-full">
+                                <iframe
+                                    src="https://www.youtube.com/embed/uBsvBUSYQE0?autoplay=1"
+                                    title="ManuDocs AP Demo Video"
+                                    className="w-full h-full rounded-lg"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}

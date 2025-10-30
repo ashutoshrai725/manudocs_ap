@@ -4,7 +4,6 @@ import {
     Mail,
     Phone,
     Linkedin,
-    ExternalLink,
     ArrowUp,
     Globe,
     Shield,
@@ -13,8 +12,379 @@ import {
     FileText,
     CheckCircle,
     Users,
-    Target
+    Target,
+    ChevronLeft,
+    ChevronRight,
+    Play,
+    Pause
 } from 'lucide-react';
+
+// Professional Carousel Component
+const ProfessionalGallery = () => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(true);
+    const [isHovered, setIsHovered] = useState(false);
+    const [direction, setDirection] = useState(1); // 1 for next, -1 for previous
+
+    // High-quality professional images with titles
+    const images = [
+        {
+            url: "https://i.postimg.cc/XY75kpCd/Gemini_Generated_Image_jev1mujev1mujev1_2.jpg",
+            title: "AI-Powered Document Processing",
+            description: "Advanced machine learning algorithms for intelligent document analysis"
+        },
+        {
+            url: "https://i.postimg.cc/vm8vDGMS/image.png",
+            title: "Real-time Analytics Dashboard",
+            description: "Comprehensive insights into your trade documentation process"
+        },
+        {
+            url: "https://i.postimg.cc/wjG15FHz/Whats_App_Image_2025_10_30_at_14_10_21_7e2b9f1b.jpg",
+            title: "Indian Customs CONCOR Bengaluru visit",
+            description: "Bank-grade security for all your sensitive trade documents"
+        },
+        {
+            url: "https://i.postimg.cc/B6h9DP58/IMG-20251030-WA0715.jpg",
+            title: "Indian Customs ICD WHITEFIELD ",
+            description: "Meeting with Indian Customs officials at Whitefield ICD"
+        },
+        {
+            url: "https://i.postimg.cc/85kgjmvC/IMG-20251030-WA0716.jpg",
+            title: "Indian Customs ICD WHITEFIELD ",
+            description: "taking review from customers at Whitefield ICD"
+        },
+        {
+            url: "https://i.postimg.cc/zBdZWHwF/IMG-20251030-WA0708.jpg",
+            title: "Incubated at RKIC BITS PILANI",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/cH1GrB3r/IMG-20251030-WA0712.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/509W6Szj/IMG-20251030-WA0710.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/mDZWty9z/IMG-20251030-WA0713.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/j580Nn6g/IMG-20251030-WA0709.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/26HRvLdG/IMG-20251030-WA0573.jpg",
+            title: "Ministry of Port, Shipping and Waterways Visit",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/zBdZWHwV/IMG-20251030-WA0705.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/5y0JkS9S/image.png",
+            title: "understanding the customs process",
+            description: "Pain points of import-export documentation at ICD WHITEFIELD"
+        },
+        {
+            url: "https://i.postimg.cc/C1bnxYjw/image.png",
+            title: "CONCOR DRY PORT",
+            description: "PORT VISIT TO UNDERSTAND THE LOGISTICS"
+        },
+        {
+            url: "https://i.postimg.cc/5NSyrnmr/IMG-20251003-16470697.jpg",
+            title: "CUSTOMER FEEDBACK AT NOIDA TRADE FAIR",
+            description: "showcasing manudocs to real customers"
+        },
+        {
+            url: "https://i.postimg.cc/wBJVKCbd/IMG-20251003-16512244.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/j50MLxJw/IMG-20251003-16523181.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/FsmwTZzS/Picsart-25-10-03-17-16-19-698.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/1XfxKRJh/IMG-20251021-WA0137.jpg",
+            title: "MEETING WITH GOVT OFFICIALS",
+            description: "Discussing trade documentation challenges and solutions"
+        },
+        {
+            url: "https://i.postimg.cc/5y6cm9pR/IMG-20251021-WA0151.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/nzdb79KN/IMG-20251021-WA0155.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/J0GwQ7KP/IMG-20251021-WA0156.jpg",
+            title: "",
+            description: ""
+        },
+        {
+            url: "https://i.postimg.cc/c4hkXtvG/image.png",
+            title: "MEETING WITH SACHIN GUPTA",
+            description: ""
+        }
+    ];
+
+    const nextSlide = () => {
+        setDirection(1);
+        setCurrentIndex((prevIndex) =>
+            prevIndex === images.length - 1 ? 0 : prevIndex + 1
+        );
+    };
+
+    const prevSlide = () => {
+        setDirection(-1);
+        setCurrentIndex((prevIndex) =>
+            prevIndex === 0 ? images.length - 1 : prevIndex - 1
+        );
+    };
+
+    const goToSlide = (index) => {
+        setDirection(index > currentIndex ? 1 : -1);
+        setCurrentIndex(index);
+    };
+
+    const togglePlay = () => {
+        setIsPlaying(!isPlaying);
+    };
+
+    // Auto-scroll functionality
+    useEffect(() => {
+        if (!isPlaying || isHovered) return;
+
+        const interval = setInterval(() => {
+            nextSlide();
+        }, 1000); // Change slide every 4 seconds
+
+        return () => clearInterval(interval);
+    }, [isPlaying, isHovered, currentIndex]);
+
+    const handleImageError = (e) => {
+        e.target.style.display = 'none';
+        const nextSibling = e.target.nextElementSibling;
+        if (nextSibling) {
+            nextSibling.style.display = 'flex';
+        }
+    };
+
+    // Animation variants for different directions
+    // Animation variants for different directions
+    const slideVariants = {
+        enter: (direction) => ({
+            x: direction > 0 ? 300 : -300,
+            opacity: 0,
+            scale: 0.95
+        }),
+        center: {
+            x: 0,
+            opacity: 1,
+            scale: 1
+        },
+        exit: (direction) => ({
+            x: direction > 0 ? -300 : 300,
+            opacity: 0,
+            scale: 0.95
+        })
+    };
+    return (
+        <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-20 overflow-hidden">
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0">
+                <motion.div
+                    className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl"
+                    animate={{
+                        x: [0, 100, 0],
+                        y: [0, -50, 0]
+                    }}
+                    transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear"
+                    }}
+                />
+                <motion.div
+                    className="absolute -bottom-40 -right-40 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl"
+                    animate={{
+                        x: [0, -100, 0],
+                        y: [0, 50, 0]
+                    }}
+                    transition={{
+                        duration: 25,
+                        repeat: Infinity,
+                        ease: "linear"
+                    }}
+                />
+            </div>
+
+            <div className="relative container mx-auto px-4">
+                {/* Section Header */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8 }}
+                    className="text-center mb-16"
+                >
+                    <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-6">
+                        Innovation in Action
+                    </h2>
+                    <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                        Witness how MANUDOCS is transforming global trade documentation through cutting-edge AI technology
+                    </p>
+                </motion.div>
+
+                {/* Carousel Container */}
+                <div
+                    className="relative max-w-6xl mx-auto"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                >
+
+
+                    {/* Main Carousel */}
+                    <div className="relative h-[600px] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl border border-gray-700/50">
+                        <AnimatePresence mode="popLayout" custom={direction}>
+                            <motion.div
+                                key={currentIndex}
+                                custom={direction}
+                                variants={slideVariants}
+                                initial="enter"
+                                animate="center"
+                                exit="exit"
+                                transition={{
+                                    duration: 0.7,
+                                    ease: [0.4, 0, 0.2, 1]
+                                }}
+                                className="absolute inset-0"
+                            >
+                                {/* Image with Gradient Overlay */}
+                                <div className="relative w-full h-full">
+                                    <img
+                                        src={images[currentIndex].url}
+                                        alt={images[currentIndex].title}
+                                        className="w-full h-full object-cover"
+                                        onError={handleImageError}
+                                    />
+
+                                    {/* Fallback */}
+                                    <div className="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                                        <div className="text-center text-gray-400">
+                                            <div className="w-20 h-20 mx-auto mb-6 bg-gray-700 rounded-2xl flex items-center justify-center">
+                                                <FileText className="w-10 h-10" />
+                                            </div>
+                                            <p className="text-xl">Image not available</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Enhanced Gradient Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+                                    {/* Content Overlay */}
+                                    <div className="absolute bottom-0 left-0 right-0 p-12">
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 40 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.1, duration: 0.1 }}
+                                            className="max-w-3xl mx-auto text-center"
+                                        >
+                                            <h3 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                                                {images[currentIndex].title}
+                                            </h3>
+                                            <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+                                                {images[currentIndex].description}
+                                            </p>
+                                        </motion.div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+
+                        {/* Navigation Arrows */}
+                        <motion.button
+                            onClick={prevSlide}
+                            className="absolute left-6 top-1/2 transform -translate-y-1/2 z-20 p-4 bg-black/40 backdrop-blur-sm text-white rounded-2xl hover:bg-blue-600/80 transition-all duration-300 border border-white/10 hover:border-blue-400/50"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <ChevronLeft className="w-6 h-6" />
+                        </motion.button>
+
+                        <motion.button
+                            onClick={nextSlide}
+                            className="absolute right-6 top-1/2 transform -translate-y-1/2 z-20 p-4 bg-black/40 backdrop-blur-sm text-white rounded-2xl hover:bg-blue-600/80 transition-all duration-300 border border-white/10 hover:border-blue-400/50"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <ChevronRight className="w-6 h-6" />
+                        </motion.button>
+                    </div>
+
+                    {/* Enhanced Indicators */}
+                    <div className="flex justify-center space-x-3 mt-8">
+                        {images.map((_, index) => (
+                            <motion.button
+                                key={index}
+                                onClick={() => goToSlide(index)}
+                                className={`relative rounded-full transition-all duration-500 ${currentIndex === index
+                                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 w-12'
+                                    : 'bg-gray-600 hover:bg-gray-500 w-3'
+                                    } h-3`}
+                                whileHover={{ scale: 1.2 }}
+                                whileTap={{ scale: 0.9 }}
+                            >
+                                {currentIndex === index && (
+                                    <motion.div
+                                        className="absolute inset-0 rounded-full bg-white/20"
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ duration: 0.3 }}
+                                    />
+                                )}
+                            </motion.button>
+                        ))}
+                    </div>
+
+                    {/* Enhanced Slide Counter */}
+                    <motion.div
+                        className="text-center mt-6"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.1 }}
+                    >
+                        <span className="text-gray-400 text-lg font-medium">
+                            <span className="text-white text-xl">{currentIndex + 1}</span>
+                            <span className="mx-2">/</span>
+                            <span>{images.length}</span>
+                        </span>
+                    </motion.div>
+                </div>
+
+
+            </div>
+        </section>
+    );
+};
+
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
@@ -350,6 +720,10 @@ const Footer = () => {
 
     return (
         <>
+            {/* Professional Gallery Section */}
+            <ProfessionalGallery />
+
+            {/* Footer Section */}
             <footer className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
                 {/* Background Elements */}
                 <div className="absolute inset-0">
