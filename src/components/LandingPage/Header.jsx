@@ -109,7 +109,7 @@ const Header = ({ user, onLogout }) => {
                                 </div>
                                 {/* Hide text on mobile, show on desktop */}
                                 <div className="hidden lg:flex flex-col">
-                                    <span className="text-2xl font-black bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent tracking-tight">
+                                    <span className="text-2xl font-black bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent tracking-tight notranslate">
                                         ManuDocs
                                     </span>
                                 </div>
@@ -126,7 +126,7 @@ const Header = ({ user, onLogout }) => {
                                     }`}
                             >
                                 <MessageCircle size={16} />
-                                <span>Generate Docs</span>
+                                <span>AutoDocs</span>
                             </button>
 
                             <button
