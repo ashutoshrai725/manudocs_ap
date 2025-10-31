@@ -22,9 +22,11 @@ import {
 // Professional Carousel Component
 const ProfessionalGallery = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(true);
+    const [isPlaying, setIsPlaying] = useState(false); // Start paused
     const [isHovered, setIsHovered] = useState(false);
-    const [direction, setDirection] = useState(1); // 1 for next, -1 for previous
+    const [direction, setDirection] = useState(1);
+    const [isInViewport, setIsInViewport] = useState(false);
+    const sectionRef = useRef(null);
 
     // High-quality professional images with titles
     const images = [
@@ -168,16 +170,45 @@ const ProfessionalGallery = () => {
         setIsPlaying(!isPlaying);
     };
 
-    // Auto-scroll functionality
+    // Intersection Observer to detect when section is in viewport
     useEffect(() => {
-        if (!isPlaying || isHovered) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsInViewport(true);
+                    setIsPlaying(true);
+                } else {
+                    setIsInViewport(false);
+                    setIsPlaying(false);
+                }
+            },
+            {
+                threshold: 0.3, // Trigger when 30% of section is visible
+                rootMargin: '-50px' // Small margin to trigger slightly earlier
+            }
+        );
+
+        if (sectionRef.current) {
+            observer.observe(sectionRef.current);
+        }
+
+        return () => {
+            if (sectionRef.current) {
+                observer.unobserve(sectionRef.current);
+            }
+        };
+    }, []);
+
+    // Auto-scroll functionality - faster and only when in viewport
+    useEffect(() => {
+        if (!isPlaying || isHovered || !isInViewport) return;
 
         const interval = setInterval(() => {
             nextSlide();
-        }, 1000); // Change slide every 4 seconds
+        }, 2500); // Faster auto-scroll: 2.5 seconds
 
         return () => clearInterval(interval);
-    }, [isPlaying, isHovered, currentIndex]);
+    }, [isPlaying, isHovered, currentIndex, isInViewport]);
 
     const handleImageError = (e) => {
         e.target.style.display = 'none';
@@ -187,7 +218,6 @@ const ProfessionalGallery = () => {
         }
     };
 
-    // Animation variants for different directions
     // Animation variants for different directions
     const slideVariants = {
         enter: (direction) => ({
@@ -206,8 +236,12 @@ const ProfessionalGallery = () => {
             scale: 0.95
         })
     };
+
     return (
-        <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-20 overflow-hidden">
+        <section
+            ref={sectionRef}
+            className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 md:py-12 lg:py-16 overflow-hidden min-h-screen flex items-center"
+        >
             {/* Animated Background Elements */}
             <div className="absolute inset-0">
                 <motion.div
@@ -236,33 +270,31 @@ const ProfessionalGallery = () => {
                 />
             </div>
 
-            <div className="relative container mx-auto px-4">
+            <div className="relative w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl"> {/* Reduced max-width */}
                 {/* Section Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8 }}
-                    className="text-center mb-16"
+                    className="text-center mb-6 md:mb-10 lg:mb-12"
                 >
-                    <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-6">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-3 md:mb-4">
                         Innovation in Action
                     </h2>
-                    <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-sm sm:text-base md:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed px-4">
                         Witness how MANUDOCS is transforming global trade documentation through cutting-edge AI technology
                     </p>
                 </motion.div>
 
                 {/* Carousel Container */}
                 <div
-                    className="relative max-w-6xl mx-auto"
+                    className="relative w-full mx-auto max-w-4xl" // Smaller container for laptops
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                 >
-
-
-                    {/* Main Carousel */}
-                    <div className="relative h-[600px] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl border border-gray-700/50">
+                    {/* Main Carousel - Smaller heights for all devices */}
+                    <div className="relative h-[250px] sm:h-[350px] md:h-[400px] lg:h-[450px] xl:h-[500px] rounded-xl md:rounded-2xl overflow-hidden shadow-2xl border border-gray-700/50">
                         <AnimatePresence mode="popLayout" custom={direction}>
                             <motion.div
                                 key={currentIndex}
@@ -289,10 +321,10 @@ const ProfessionalGallery = () => {
                                     {/* Fallback */}
                                     <div className="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
                                         <div className="text-center text-gray-400">
-                                            <div className="w-20 h-20 mx-auto mb-6 bg-gray-700 rounded-2xl flex items-center justify-center">
-                                                <FileText className="w-10 h-10" />
+                                            <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-gray-700 rounded-2xl flex items-center justify-center">
+                                                <FileText className="w-6 h-6 sm:w-8 sm:h-8" />
                                             </div>
-                                            <p className="text-xl">Image not available</p>
+                                            <p className="text-base sm:text-lg">Image not available</p>
                                         </div>
                                     </div>
 
@@ -300,19 +332,23 @@ const ProfessionalGallery = () => {
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
                                     {/* Content Overlay */}
-                                    <div className="absolute bottom-0 left-0 right-0 p-12">
+                                    <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8">
                                         <motion.div
                                             initial={{ opacity: 0, y: 40 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: 0.1, duration: 0.1 }}
-                                            className="max-w-3xl mx-auto text-center"
+                                            className="max-w-2xl mx-auto text-center"
                                         >
-                                            <h3 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-                                                {images[currentIndex].title}
-                                            </h3>
-                                            <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                                                {images[currentIndex].description}
-                                            </p>
+                                            {images[currentIndex].title && (
+                                                <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white mb-2 sm:mb-3 leading-tight">
+                                                    {images[currentIndex].title}
+                                                </h3>
+                                            )}
+                                            {images[currentIndex].description && (
+                                                <p className="text-xs sm:text-sm md:text-base text-gray-300 mb-3 sm:mb-4 leading-relaxed">
+                                                    {images[currentIndex].description}
+                                                </p>
+                                            )}
                                         </motion.div>
                                     </div>
                                 </div>
@@ -322,33 +358,47 @@ const ProfessionalGallery = () => {
                         {/* Navigation Arrows */}
                         <motion.button
                             onClick={prevSlide}
-                            className="absolute left-6 top-1/2 transform -translate-y-1/2 z-20 p-4 bg-black/40 backdrop-blur-sm text-white rounded-2xl hover:bg-blue-600/80 transition-all duration-300 border border-white/10 hover:border-blue-400/50"
+                            className="absolute left-2 sm:left-3 md:left-4 top-1/2 transform -translate-y-1/2 z-20 p-2 sm:p-2 md:p-3 bg-black/40 backdrop-blur-sm text-white rounded-lg sm:rounded-xl hover:bg-blue-600/80 transition-all duration-300 border border-white/10 hover:border-blue-400/50"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                         >
-                            <ChevronLeft className="w-6 h-6" />
+                            <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                         </motion.button>
 
                         <motion.button
                             onClick={nextSlide}
-                            className="absolute right-6 top-1/2 transform -translate-y-1/2 z-20 p-4 bg-black/40 backdrop-blur-sm text-white rounded-2xl hover:bg-blue-600/80 transition-all duration-300 border border-white/10 hover:border-blue-400/50"
+                            className="absolute right-2 sm:right-3 md:right-4 top-1/2 transform -translate-y-1/2 z-20 p-2 sm:p-2 md:p-3 bg-black/40 backdrop-blur-sm text-white rounded-lg sm:rounded-xl hover:bg-blue-600/80 transition-all duration-300 border border-white/10 hover:border-blue-400/50"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                         >
-                            <ChevronRight className="w-6 h-6" />
+                            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                        </motion.button>
+
+                        {/* Play/Pause Button */}
+                        <motion.button
+                            onClick={togglePlay}
+                            className="absolute top-2 sm:top-3 right-2 sm:right-3 z-20 p-2 bg-black/40 backdrop-blur-sm text-white rounded-lg sm:rounded-xl hover:bg-blue-600/80 transition-all duration-300 border border-white/10 hover:border-blue-400/50"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            {isPlaying ? (
+                                <Pause className="w-3 h-3 sm:w-4 sm:h-4" />
+                            ) : (
+                                <Play className="w-3 h-3 sm:w-4 sm:h-4" />
+                            )}
                         </motion.button>
                     </div>
 
-                    {/* Enhanced Indicators */}
-                    <div className="flex justify-center space-x-3 mt-8">
+                    {/* Enhanced Indicators - Hidden on mobile */}
+                    <div className="hidden sm:flex justify-center space-x-1 sm:space-x-2 mt-3 sm:mt-4 md:mt-6 px-2">
                         {images.map((_, index) => (
                             <motion.button
                                 key={index}
                                 onClick={() => goToSlide(index)}
                                 className={`relative rounded-full transition-all duration-500 ${currentIndex === index
-                                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 w-12'
-                                    : 'bg-gray-600 hover:bg-gray-500 w-3'
-                                    } h-3`}
+                                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 w-4 sm:w-5 md:w-6'
+                                    : 'bg-gray-600 hover:bg-gray-500 w-1.5 sm:w-2'
+                                    } h-1.5 sm:h-2`}
                                 whileHover={{ scale: 1.2 }}
                                 whileTap={{ scale: 0.9 }}
                             >
@@ -366,20 +416,18 @@ const ProfessionalGallery = () => {
 
                     {/* Enhanced Slide Counter */}
                     <motion.div
-                        className="text-center mt-6"
+                        className="text-center mt-2 sm:mt-3 md:mt-4"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.1 }}
                     >
-                        <span className="text-gray-400 text-lg font-medium">
-                            <span className="text-white text-xl">{currentIndex + 1}</span>
-                            <span className="mx-2">/</span>
+                        <span className="text-gray-400 text-xs sm:text-sm md:text-base font-medium">
+                            <span className="text-white text-sm sm:text-base md:text-lg">{currentIndex + 1}</span>
+                            <span className="mx-1 sm:mx-1.5">/</span>
                             <span>{images.length}</span>
                         </span>
                     </motion.div>
                 </div>
-
-
             </div>
         </section>
     );
