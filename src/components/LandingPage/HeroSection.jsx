@@ -302,18 +302,19 @@ const HeroSection = ({ isMobile, user }) => {
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.8 }}
-                        className="flex flex-col sm:flex-row gap-4 pt-4 lg:ml-16"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full max-w-4xl mx-auto lg:ml-10 mt-4"
                     >
+                        {/* All buttons with equal width on desktop */}
                         {user ? (
                             <motion.button
                                 whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(34,197,94,0.6)" }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleNavigation('/analytics', true)}
-                                className="relative px-7 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-green-500 via-green-600 to-green-400 shadow-md min-w-[160px] transition-all duration-300"
+                                className="relative px-4 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-green-500 via-green-600 to-green-400 shadow-md w-full transition-all duration-300 text-sm sm:text-base text-center"
                             >
-                                <span className="relative flex items-center justify-center gap-2 text-base font-semibold">
+                                <span className="relative flex items-center justify-center gap-2 font-semibold">
                                     Analytics Dashboard
-                                    <BarChart3 size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
+                                    <BarChart3 size={18} className="transition-transform duration-300 group-hover:translate-x-1 flex-shrink-0" />
                                 </span>
                             </motion.button>
                         ) : (
@@ -321,38 +322,38 @@ const HeroSection = ({ isMobile, user }) => {
                                 whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(34,197,94,0.6)" }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleNavigation('/auth')}
-                                className="relative px-7 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-green-600 via-green-500 to-green-400 shadow-md min-w-[160px] transition-all duration-300"
+                                className="relative px-4 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-green-600 via-green-500 to-green-400 shadow-md w-full transition-all duration-300 text-sm sm:text-base text-center"
                             >
-                                <span className="relative flex items-center justify-center gap-2 text-base font-semibold">
+                                <span className="relative flex items-center justify-center gap-2 font-semibold">
                                     Get Started Free
-                                    <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
+                                    <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1 flex-shrink-0" />
                                 </span>
                             </motion.button>
                         )}
 
-                        {/* New ERI Button */}
+                        {/* ERI Button */}
                         <motion.button
                             whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(37,99,235,0.5)" }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleNavigation('/export-readiness-index', true)}
-                            className="relative px-7 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-md min-w-[160px] transition-all duration-300"
+                            className="relative px-4 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-md w-full transition-all duration-300 text-sm sm:text-base text-center"
                         >
-                            <span className="relative flex flex-col items-center justify-center gap-0 text-base font-semibold">
+                            <span className="relative flex flex-col items-center justify-center gap-0 font-semibold">
                                 ERI
                                 <sub className="text-xs font-normal opacity-90">Export Readiness Index</sub>
                             </span>
                         </motion.button>
 
-                        {/* Demo / Generate Button */}
+                        {/* Demo Button */}
                         <motion.button
                             whileHover={{ scale: 1.05, boxShadow: "0 8px 20px rgba(34,197,94,0.3)" }}
                             whileTap={{ scale: 0.95 }}
                             onClick={handleDemoClick}
-                            className="relative px-7 py-3 rounded-2xl font-semibold text-green-600 bg-white/90 backdrop-blur-md border border-green-600 hover:bg-white min-w-[160px] transition-all duration-300"
+                            className="relative px-4 py-3 rounded-2xl font-semibold text-green-600 bg-white/90 backdrop-blur-md border border-green-600 hover:bg-white w-full transition-all duration-300 text-sm sm:text-base text-center"
                         >
-                            <span className="flex items-center justify-center gap-2 text-base font-semibold">
+                            <span className="flex items-center justify-center gap-2 font-semibold">
                                 {user ? 'Generate Documents' : 'Watch Demo'}
-                                <Play size={16} className="group-hover:scale-110 transition-transform duration-300" />
+                                <Play size={16} className="group-hover:scale-110 transition-transform duration-300 flex-shrink-0" />
                             </span>
                         </motion.button>
                     </motion.div>
