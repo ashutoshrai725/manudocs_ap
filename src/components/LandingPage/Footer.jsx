@@ -71,7 +71,7 @@ const ProfessionalGallery = () => {
             description: ""
         },
         {
-            url: "https://i.postimg.cc/mDZWty9z/IMG-20251030-WA0713.jpg",
+            url: "https://i.postimg.cc/DwfJTQnz/mohit-manudocs.jpg",
             title: "",
             description: ""
         },
