@@ -402,35 +402,7 @@ const DutyCalculator = () => {
                 </div>
               </div>
 
-              {/* Quantity & Unit */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Quantity</label>
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={formData.quantity}
-                    onChange={handleInputChange}
-                    placeholder="1000"
-                    className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-green-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Unit</label>
-                  <select
-                    name="unit"
-                    value={formData.unit}
-                    onChange={handleInputChange}
-                    className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-green-500"
-                  >
-                    <option value="kg">Kilograms</option>
-                    <option value="tons">Tons</option>
-                    <option value="pcs">Pieces</option>
-                    <option value="ltr">Liters</option>
-                  </select>
-                </div>
-              </div>
-
+             
               {/* Country */}
               {mode === 'import' ? (
                 <div>
@@ -628,14 +600,7 @@ const DutyCalculator = () => {
                   </div>
 
                   {/* Download */}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <Download size={14} />
-                    Download Report
-                  </motion.button>
+                  
                 </motion.div>
               )}
             </AnimatePresence>
