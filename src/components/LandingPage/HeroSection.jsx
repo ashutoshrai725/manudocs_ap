@@ -352,7 +352,7 @@ const HeroSection = ({ isMobile, user }) => {
                             className="relative px-4 py-3 rounded-2xl font-semibold text-green-600 bg-white/90 backdrop-blur-md border border-green-600 hover:bg-white w-full transition-all duration-300 text-sm sm:text-base text-center"
                         >
                             <span className="flex items-center justify-center gap-2 font-semibold">
-                                {user ? 'Generate Documents' : 'Watch Demo'}
+                                {user ? 'Compliance Documents' : 'Watch Demo'}
                                 <Play size={16} className="group-hover:scale-110 transition-transform duration-300 flex-shrink-0" />
                             </span>
                         </motion.button>
