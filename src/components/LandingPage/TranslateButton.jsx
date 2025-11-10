@@ -1,16 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './TranslateButton.css';
 
-// Custom image URLs
-const customImages = {
-    indiaFlag: 'https://i.postimg.cc/T2ZGpspq/image.png',
-    enSymbol: 'https://i.postimg.cc/nLx6vbJB/image.png',
-};
+// Supported Indian languages (code and native name only)
+const LANGUAGES = [
+    { code: 'en', label: 'English' },
+    { code: 'hi', label: 'हिंदी' },
+    { code: 'ta', label: 'தமிழ்' },
+    { code: 'te', label: 'తెలుగు' },
+    { code: 'bn', label: 'বাংলা' },
+    { code: 'gu', label: 'ગુજરાતી' },
+    { code: 'ml', label: 'മലയാളം' },
+    { code: 'kn', label: 'ಕನ್ನಡ' },
+    { code: 'mr', label: 'मराठी' },
+    { code: 'pa', label: 'ਪੰਜਾਬੀ' },
+    { code: 'as', label: 'অসমীয়া' },
+    { code: 'or', label: 'ଓଡ଼ିଆ' },
+    { code: 'ne', label: 'नेपाली' },
+    { code: 'ur', label: 'اردو' }
+];
 
 const TranslateButton = ({ isMobile = false }) => {
     const [isTranslated, setIsTranslated] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [selectedLangCode, setSelectedLangCode] = useState('en');
     const dropdownRef = useRef(null);
 
     useEffect(() => {
@@ -22,21 +35,22 @@ const TranslateButton = ({ isMobile = false }) => {
             }
         }, 100);
 
-        // Check current translation status on mount
+        // Check current translation status
         const checkTranslationStatus = () => {
             const currentLang = getCookie('googtrans');
-            if (currentLang && currentLang.includes('/te')) {
-                setIsTranslated(true);
-                document.body.classList.add('telugu-active');
+            if (currentLang) {
+                const langCode = currentLang.split('/')[2] || 'en';
+                setSelectedLangCode(langCode);
+                setIsTranslated(langCode !== 'en');
             } else {
+                setSelectedLangCode('en');
                 setIsTranslated(false);
-                document.body.classList.remove('telugu-active');
             }
         };
 
         checkTranslationStatus();
 
-        // Monitor translation changes
+        // Observe changes in the document
         const observer = new MutationObserver(() => {
             checkTranslationStatus();
         });
@@ -52,14 +66,12 @@ const TranslateButton = ({ isMobile = false }) => {
         };
     }, []);
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsDropdownOpen(false);
             }
         };
-
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -88,151 +100,46 @@ const TranslateButton = ({ isMobile = false }) => {
             alert('Translation service is loading. Please wait...');
             return;
         }
-
-        if (language === 'te') {
-            // Translate to Telugu
-            setCookie('googtrans', '/en/te');
-            document.body.classList.add('telugu-active');
-            setIsTranslated(true);
-        } else {
-            // Switch to English
-            setCookie('googtrans', '/en/en');
-            document.body.classList.remove('telugu-active');
-            setIsTranslated(false);
-        }
-
+        setCookie('googtrans', `/en/${language}`);
+        setSelectedLangCode(language);
+        setIsTranslated(language !== 'en');
         setIsDropdownOpen(false);
-
-        // Reload page to apply translation
         window.location.reload();
     };
 
-    // Get current active icon
-    const getActiveIcon = () => {
-        if (isTranslated) {
-            return (
-                <img
-                    src={customImages.indiaFlag}
-                    alt="Telugu"
-                    className="translate-icon india-flag"
-                    title="Telugu"
-                    onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'inline';
-                    }}
-                />
-            );
-        } else {
-            return (
-                <img
-                    src={customImages.enSymbol}
-                    alt="English"
-                    className="translate-icon en-symbol"
-                    title="English"
-                    onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'inline';
-                    }}
-                />
-            );
-        }
-    };
-
-    // Fallback content for when images fail to load
-    const getActiveFallbackIcon = () => {
-        if (isTranslated) {
-            return (
-                <span className="translate-fallback india-fallback" title="Telugu">
-                    🇮🇳
-                </span>
-            );
-        } else {
-            return (
-                <span className="translate-fallback en-fallback" title="English">
-                    EN
-                </span>
-            );
-        }
-    };
-
-    // Get current active text
-    const getActiveText = () => {
-        if (isTranslated) {
-            return 'తెలుగు';
-        } else {
-            return 'English';
-        }
+    const getLabel = (code) => {
+        const lang = LANGUAGES.find(l => l.code === code);
+        return lang ? lang.label : code.toUpperCase();
     };
 
     return (
         <div className={`translate-button-container ${isMobile ? 'mobile' : ''}`} ref={dropdownRef}>
             <div id="google_translate_element" style={{ display: 'none' }}></div>
-
             <div className="translate-dropdown">
                 <button
                     className={`translate-btn ${isTranslated ? 'translated' : ''} ${isMobile ? 'mobile' : ''}`}
                     onClick={toggleDropdown}
-                    title={`Current: ${getActiveText()}`}
+                    title={`Current: ${getLabel(selectedLangCode)}`}
                 >
-                    <div className="icon-container">
-                        {getActiveIcon()}
-                        {getActiveFallbackIcon()}
-                    </div>
-                    {!isMobile && (
+                    {!isMobile &&
                         <span className="translate-text">
-                            {getActiveText()}
+                            {getLabel(selectedLangCode)}
                         </span>
-                    )}
-                    <span className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}>
-                        ▼
-                    </span>
+                    }
+                    <span className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}>▼</span>
                 </button>
-
                 {isDropdownOpen && (
                     <div className="dropdown-menu">
-                        <div
-                            className={`dropdown-item ${!isTranslated ? 'active' : ''}`}
-                            onClick={() => selectLanguage('en')}
-                        >
-                            <div className="dropdown-icon">
-                                <img
-                                    src={customImages.enSymbol}
-                                    alt="English"
-                                    className="translate-icon en-symbol"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'inline';
-                                    }}
-                                />
-                                <span className="translate-fallback en-fallback">
-                                    EN
-                                </span>
+                        {LANGUAGES.map(lang => (
+                            <div
+                                key={lang.code}
+                                className={`dropdown-item ${selectedLangCode === lang.code ? 'active' : ''}`}
+                                onClick={() => selectLanguage(lang.code)}
+                            >
+                                <span className="dropdown-text">{lang.label}</span>
+                                {selectedLangCode === lang.code && <span className="checkmark">✓</span>}
                             </div>
-                            <span className="dropdown-text">English</span>
-                            {!isTranslated && <span className="checkmark">✓</span>}
-                        </div>
-
-                        <div
-                            className={`dropdown-item ${isTranslated ? 'active' : ''}`}
-                            onClick={() => selectLanguage('te')}
-                        >
-                            <div className="dropdown-icon">
-                                <img
-                                    src={customImages.indiaFlag}
-                                    alt="Telugu"
-                                    className="translate-icon india-flag"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'inline';
-                                    }}
-                                />
-                                <span className="translate-fallback india-fallback">
-                                    🇮🇳
-                                </span>
-                            </div>
-                            <span className="dropdown-text">తెలుగు</span>
-                            {isTranslated && <span className="checkmark">✓</span>}
-                        </div>
+                        ))}
                     </div>
                 )}
             </div>
