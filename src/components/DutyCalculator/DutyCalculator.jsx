@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // ✅ Added useEffect
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { 
   Calculator, TrendingUp, DollarSign, FileText, CheckCircle,
   Download, RefreshCw, Info, Ship, Plane, AlertTriangle, Sparkles
 } from 'lucide-react';
-
 
 const DutyCalculator = () => {
   const [mode, setMode] = useState('import');
@@ -23,15 +22,43 @@ const DutyCalculator = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // =========================
-  // VERIFIED BASELINE RATES (MFN) — INDIA IMPORT/EXPORT
-  // =========================
-  // Notes:
-  // • SWS = 10% of BCD; if BCD is 0, SWS is effectively 0.
-  // • 1006.30 rice: IGST 0% for bulk/non pre-packaged imports; BCD protected at 70%.
-  // • 8471.30 laptops: BCD 0% (MFN), IGST 18%.
-  // • 8517.12 smartphones: BCD 20% (sensitive line; FTAs generally do not cut this to 0).
-  // • Apparel 6203.42 has a specific duty alt (₹135/pc or 20%, whichever higher). We keep ad-valorem 20% to avoid UI changes.
+  // ✅ NEW: Currency Exchange State
+  const [exchangeRates, setExchangeRates] = useState({
+    USD: 1,
+    EUR: 0.92,
+    GBP: 0.79,
+    INR: 83.12
+  });
+
+  // ✅ NEW: Fetch Live Exchange Rates
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+        if (data && data.rates) {
+          setExchangeRates({
+            USD: 1,
+            EUR: data.rates.EUR,
+            GBP: data.rates.GBP,
+            INR: data.rates.INR
+          });
+        }
+      } catch (error) {
+        console.log('Using fallback rates');
+      }
+    };
+    fetchRates();
+  }, []);
+
+  // ✅ NEW: Currency Conversion Helper
+  const convertToINR = (value, currency) => {
+    if (currency === 'INR') return value;
+    const rate = exchangeRates[currency] || 1;
+    const valueInUSD = currency === 'USD' ? value : value / rate;
+    return valueInUSD * exchangeRates.INR;
+  };
+
   const hsCodeDatabase = {
     '0904.20': {
       name: 'Pepper (Piper), dried or crushed',
@@ -85,11 +112,6 @@ const DutyCalculator = () => {
     }
   };
 
-  // =========================
-  // FTA / PTA MAP (India-side, In force)
-  // =========================
-  // We detect presence of an agreement first; then apply a preferential BCD ONLY
-  // if we have a vetted HS×Country rate below.
   const ftaDirectory = {
     AE: { code: 'AE', name: 'United Arab Emirates', pact: 'India–UAE CEPA', inForce: true },
     AU: { code: 'AU', name: 'Australia', pact: 'India–Australia ECTA', inForce: true },
@@ -101,33 +123,17 @@ const DutyCalculator = () => {
     NP: { code: 'NP', name: 'Nepal', pact: 'Treaty of Trade / SAFTA', inForce: true },
     BT: { code: 'BT', name: 'Bhutan', pact: 'India–Bhutan Trade Agreement', inForce: true },
     MU: { code: 'MU', name: 'Mauritius', pact: 'India–Mauritius CECPA', inForce: true },
-    CH: { code: 'CH', name: 'Switzerland', pact: 'India–EFTA TEPA', inForce: true }, // EFTA: CH, NO, IS, LI
+    CH: { code: 'CH', name: 'Switzerland', pact: 'India–EFTA TEPA', inForce: true },
     NO: { code: 'NO', name: 'Norway', pact: 'India–EFTA TEPA', inForce: true },
     IS: { code: 'IS', name: 'Iceland', pact: 'India–EFTA TEPA', inForce: true },
     LI: { code: 'LI', name: 'Liechtenstein', pact: 'India–EFTA TEPA', inForce: true }
   };
 
-  // =========================
-  // PREFERENTIAL BCD — vetted HS×Country pairs only
-  // =========================
-  // IMPORTANT: This table only includes pairs we can rely on confidently today.
-  // Everything else remains on MFN (no change).
-  //
-  // • 8471.30 Laptops → MFN BCD already 0% (FTA won’t reduce further).
-  // • 8517.12 Smartphones → sensitive; keep 20% (most FTAs exclude or retain 20%).
-  // • 1006.30 Rice → agriculture sensitive; keep 70%.
-  // • 5208.12 Cotton fabrics → under Japan/Korea CEPA there are reduced lines; a safe,
-  //   widely-cited preference for core 5208 sublines is 5% BCD. We apply 5% for JP/KR.
-  //   (IGST stays 5%.)
-  //
-  // You can extend this object with more HS lines as you validate them.
   const preferentialBCD = {
     '5208.12': {
-      JP: 5, // India–Japan CEPA: many 5208 lines at 5%
-      KR: 5  // India–Korea CEPA: many 5208 lines at 5%
-      // Add more countries if verified for your subline
+      JP: 5,
+      KR: 5
     }
-    // other HS codes can be added here as you validate
   };
 
   const countries = [
@@ -172,11 +178,7 @@ const DutyCalculator = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // ================
-  // FTA helper
-  // ================
   const getFtaContext = (hsCode, originCountry) => {
-    // checks if we have an in-force pact + a vetted preferential BCD for this HS
     const pact = ftaDirectory[originCountry];
     if (!pact || !pact.inForce) return { applied: false };
     const prefMap = preferentialBCD[hsCode];
@@ -188,23 +190,24 @@ const DutyCalculator = () => {
     };
   };
 
+  // ✅ UPDATED: Calculate Import with Currency Conversion
   const calculateImportDuty = () => {
-    const productValue = parseFloat(formData.productValue);
+    const inputValue = parseFloat(formData.productValue);
     const hsData = hsCodeDatabase[formData.hsCode];
     if (!hsData) return null;
 
-    // START with MFN (baseline)
+    // Convert to INR for duty calculation
+    const productValue = convertToINR(inputValue, formData.currency);
+
     let bcdRate = hsData.import.bcd / 100;
     let swsRate = hsData.import.sws / 100;
     const igstRate = hsData.import.igst / 100;
 
-    // Check FTA preference for India imports
     let ftaInfo = { applied: false };
     if (formData.originCountry && formData.originCountry !== 'IN') {
       const fta = getFtaContext(formData.hsCode, formData.originCountry);
       if (fta.applied && typeof fta.bcd === 'number') {
         bcdRate = fta.bcd / 100;
-        // If BCD is reduced to 0 via FTA, SWS becomes 0 as well (10% of 0)
         swsRate = bcdRate === 0 ? 0 : 0.10;
         ftaInfo = { applied: true, pact: fta.pact, prefBcdPercent: fta.bcd };
       } else if (fta.pact) {
@@ -212,17 +215,17 @@ const DutyCalculator = () => {
       }
     }
 
-    // Duty math
     const basicCustomsDuty = productValue * bcdRate;
     const socialWelfareSurcharge = basicCustomsDuty * swsRate;
     const assessableValue = productValue + basicCustomsDuty + socialWelfareSurcharge;
     const igst = assessableValue * igstRate;
-
     const totalDuty = basicCustomsDuty + socialWelfareSurcharge + igst;
     const totalLandedCost = productValue + totalDuty;
 
     return {
       productValue,
+      originalValue: inputValue, // ✅ Store original
+      originalCurrency: formData.currency, // ✅ Store currency
       basicCustomsDuty,
       socialWelfareSurcharge,
       assessableValue,
@@ -235,20 +238,25 @@ const DutyCalculator = () => {
     };
   };
 
+  // ✅ UPDATED: Calculate Export with Currency Conversion
   const calculateExportBenefits = () => {
-    const productValue = parseFloat(formData.productValue);
+    const inputValue = parseFloat(formData.productValue);
     const hsData = hsCodeDatabase[formData.hsCode];
     if (!hsData) return null;
+
+    // Convert to INR for benefits calculation
+    const productValue = convertToINR(inputValue, formData.currency);
 
     const rodtepBenefit = productValue * (hsData.export.rodtep / 100);
     const meisBenefit = productValue * (hsData.export.meis / 100);
     const dutyDrawback = productValue * (hsData.export.drawback / 100);
-
     const totalBenefits = rodtepBenefit + meisBenefit + dutyDrawback;
     const netRealizableValue = productValue + totalBenefits;
 
     return {
       productValue,
+      originalValue: inputValue, // ✅ Store original
+      originalCurrency: formData.currency, // ✅ Store currency
       rodtepBenefit,
       meisBenefit,
       dutyDrawback,
@@ -277,10 +285,11 @@ const DutyCalculator = () => {
     setErrors({});
   };
 
+  // ✅ UPDATED: Format Currency - Always show INR in results
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: formData.currency,
+      currency: 'INR',
       minimumFractionDigits: 2
     }).format(amount);
   };
@@ -289,7 +298,6 @@ const DutyCalculator = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 py-6 px-3 sm:px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-5">
           <div className="inline-flex items-center gap-2 mb-2">
             <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
@@ -298,6 +306,10 @@ const DutyCalculator = () => {
             <h1 className="text-xl md:text-2xl font-bold text-white">Smart Duty Calculator</h1>
           </div>
           <p className="text-gray-400 text-xs sm:text-sm">Real Indian Customs rates (2025) • Accurate calculations</p>
+          {/* ✅ NEW: Live Exchange Rate Display */}
+          <div className="mt-2 text-[10px] text-gray-500">
+            Live rates: 1 USD = ₹{exchangeRates.INR.toFixed(2)} | 1 EUR = ₹{(exchangeRates.INR / exchangeRates.EUR).toFixed(2)} | 1 GBP = ₹{(exchangeRates.INR / exchangeRates.GBP).toFixed(2)}
+          </div>
         </motion.div>
 
         {/* Mode Toggle */}
@@ -321,7 +333,7 @@ const DutyCalculator = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Input Form */}
+          {/* Input Form - EXACTLY SAME */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-gray-800/30 backdrop-blur-xl rounded-xl p-4 border border-gray-700">
             <h2 className="text-base font-bold text-white mb-3 flex items-center gap-1.5">
               <FileText size={16} className="text-green-500" />
@@ -402,7 +414,6 @@ const DutyCalculator = () => {
                 </div>
               </div>
 
-             
               {/* Country */}
               {mode === 'import' ? (
                 <div>
@@ -473,7 +484,7 @@ const DutyCalculator = () => {
             </div>
           </motion.div>
 
-          {/* Results */}
+          {/* Results - WITH CONVERSION INFO */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-gray-800/30 backdrop-blur-xl rounded-xl p-4 border border-gray-700">
             <h2 className="text-base font-bold text-white mb-3 flex items-center gap-1.5">
               <TrendingUp size={16} className="text-green-500" />
@@ -491,6 +502,21 @@ const DutyCalculator = () => {
                 </motion.div>
               ) : (
                 <motion.div key="results" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
+                  
+                  {/* ✅ NEW: Currency Conversion Info Box */}
+                  {results.originalCurrency !== 'INR' && (
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Info size={12} className="text-blue-400" />
+                        <h4 className="text-white font-semibold text-[10px]">Currency Conversion</h4>
+                      </div>
+                      <p className="text-blue-200 text-[10px]">
+                        {results.originalValue} {results.originalCurrency} = ₹{results.productValue.toFixed(2)} INR
+                        <span className="text-blue-300 ml-1">(Rate: 1 {results.originalCurrency} = ₹{(exchangeRates.INR / (results.originalCurrency === 'USD' ? 1 : exchangeRates[results.originalCurrency])).toFixed(4)})</span>
+                      </p>
+                    </div>
+                  )}
+
                   {/* Summary */}
                   <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-xl p-3">
                     <div className="flex items-center justify-between mb-2">
@@ -520,7 +546,7 @@ const DutyCalculator = () => {
                     </div>
                   )}
 
-                  {/* Breakdown */}
+                  {/* Breakdown - REST ALL SAME */}
                   <div className="space-y-2">
                     <h4 className="text-white font-semibold text-xs mb-2">Detailed Breakdown</h4>
 
@@ -598,16 +624,13 @@ const DutyCalculator = () => {
                       </>
                     )}
                   </div>
-
-                  {/* Download */}
-                  
                 </motion.div>
               )}
             </AnimatePresence>
           </motion.div>
         </div>
 
-        {/* Info Cards - Compact */}
+        {/* Info Cards - EXACTLY SAME */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
           {mode === 'import' ? (
             <>
@@ -660,7 +683,7 @@ const DutyCalculator = () => {
           )}
         </motion.div>
 
-        {/* Disclaimer */}
+        {/* Disclaimer - EXACTLY SAME */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
           <div className="flex items-start gap-2">
             <AlertTriangle size={14} className="text-yellow-400 mt-0.5 flex-shrink-0" />
