@@ -379,54 +379,9 @@ const BackedBySection = () => {
                     </div>
                 </div>
 
-                {/* Stats Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.4 }}
-                    viewport={{ once: true }}
-                    className="mt-12 md:mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
-                >
-                    {[
-                        { icon: Users, number: '6', label: 'Premier Partners' },
-                        { icon: Award, number: '50+', label: 'Years Excellence' },
-                        { icon: Rocket, number: '1000+', label: 'Startups Supported' },
-                        { icon: Star, number: 'NIRF #1', label: 'Top Rankings' }
-                    ].map((stat, index) => (
-                        <motion.div
-                            key={stat.label}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
-                            viewport={{ once: true }}
-                            className="text-center p-4 md:p-6 rounded-xl md:rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
-                        >
-                            <div className="flex flex-col items-center space-y-2 md:space-y-3">
-                                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-gradient-to-br from-green-500 to-green-600 group-hover:scale-110 transition-transform duration-300">
-                                    <stat.icon className="w-4 h-4 md:w-6 md:h-6 text-white" />
-                                </div>
-                                <div className="text-lg md:text-2xl font-bold text-white">{stat.number}</div>
-                                <div className="text-xs md:text-sm text-gray-400 font-medium">{stat.label}</div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </motion.div>
 
-                {/* CTA Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.6 }}
-                    viewport={{ once: true }}
-                    className="mt-12 md:mt-16 text-center"
-                >
-                    <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-500/10 to-blue-500/10 backdrop-blur-sm border border-white/10 rounded-xl md:rounded-2xl px-4 py-3 md:px-8 md:py-4">
-                        <ExternalLink className="w-4 h-4 md:w-5 md:h-5 text-green-400" />
-                        <span className="text-sm md:text-base text-gray-300 font-semibold">
-                            Building the future of export documentation with India's best
-                        </span>
-                    </div>
-                </motion.div>
+
+
             </div>
         </section>
     );

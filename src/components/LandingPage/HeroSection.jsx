@@ -139,7 +139,7 @@ const HeroSection = ({ isMobile, user }) => {
                 loop
                 muted
                 playsInline
-                src="/videos/apport.mp4"
+                src="/videos/new4k.mp4"
             >
                 Your browser does not support the video tag.
             </video>
@@ -261,7 +261,7 @@ const HeroSection = ({ isMobile, user }) => {
                             transition={{ delay: 0.8, duration: 0.6 }}
                             className="text-sm sm:text-base md:text-lg text-gray-200 max-w-lg leading-relaxed lg:ml-8"
                         >
-                            Transform your export documentation process with AI. Upload invoices, extract data automatically, and generate professional export documents in minutes.
+
                         </motion.p>
                     </div>
 

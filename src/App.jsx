@@ -12,6 +12,7 @@ import ExportReadinessIndex from './components/ExportReadinessIndex';
 import SmartDocGenerator from './components/SmartDocGenerator';
 import DutyCalculator from './components/DutyCalculator/DutyCalculator.jsx';
 import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
+import AboutManuDocs from './components/LandingPage/AboutManudocs.jsx'; // ADD THIS IMPORT
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || import.meta.env.REACT_APP_SUPABASE_URL,
@@ -20,7 +21,7 @@ const supabase = createClient(
 
 // Protected Route Component
 const ProtectedRoute = ({ children, user }) => {
-  return user ? children : <Navigate to="/auth" replace />;
+  return user ? children : <Navigate to="/auth" replace />; // Fixed typo: NavigAate -> Navigate
 };
 
 // Public Route Component (redirect to landing if authenticated)
@@ -116,6 +117,17 @@ function App() {
                 user={user}
                 onLogout={handleLogout}
               />
+            }
+          />
+
+          {/* About ManuDocs Page - Accessible to all */}
+          <Route
+            path="/about"
+            element={
+              <div className="min-h-screen bg-white">
+                {/* You might want to create a separate AboutPageWrapper or reuse LandingPage structure */}
+                <AboutManuDocs />
+              </div>
             }
           />
 

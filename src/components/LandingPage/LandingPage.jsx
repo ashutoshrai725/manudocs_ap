@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from './Header.jsx';
 import HeroSection from './HeroSection.jsx';
 import BackedBySection from './BackedBySection.jsx';
+import AboutManuDocs from './AboutManudocs.jsx'; // Add this import
 import Footer from './Footer.jsx';
 
 const LandingPage = ({ user, onLogout }) => {
@@ -41,14 +42,17 @@ const LandingPage = ({ user, onLogout }) => {
             {/* Main content sections */}
             <main>
                 {/* Hero Section */}
-                <HeroSection 
-                    isMobile={isMobile} 
-                    user={user} 
+                <HeroSection
+                    isMobile={isMobile}
+                    user={user}
                 />
-                
+
+                {/* About ManuDocs Section - Added as part of the landing page */}
+                <AboutManuDocs />
+
                 {/* Backed By Section */}
                 <BackedBySection />
-                
+
                 {/* Footer */}
                 <Footer />
             </main>
@@ -56,4 +60,4 @@ const LandingPage = ({ user, onLogout }) => {
     );
 };
 
-export default LandingPage;
+export default LandingPage; 
