@@ -7,12 +7,7 @@ import AuthPage from './components/Auth/AuthPage.jsx';
 import DocumentUploadPage from './components/Upload/DocumentUploadPage.jsx';
 import AIAgentPage from './components/AIAgent/AIAgentPage.jsx';
 import AIAgent2Page from './components/AIAgent/AIAgent2Page.jsx';
-import LoadingSpinner from './components/common/LoadingSpinner.jsx';
-import ExportReadinessIndex from './components/ExportReadinessIndex';
-import SmartDocGenerator from './components/SmartDocGenerator';
-import DutyCalculator from './components/DutyCalculator/DutyCalculator.jsx';
-import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
-import AboutManuDocs from './components/LandingPage/AboutManudocs.jsx'; // ADD THIS IMPORT
+import LoadingSpinner from './components/common/LoadingSpinner.jsx'; // You can create this component
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || import.meta.env.REACT_APP_SUPABASE_URL,
@@ -21,7 +16,7 @@ const supabase = createClient(
 
 // Protected Route Component
 const ProtectedRoute = ({ children, user }) => {
-  return user ? children : <Navigate to="/auth" replace />; // Fixed typo: NavigAate -> Navigate
+  return user ? children : <Navigate to="/auth" replace />;
 };
 
 // Public Route Component (redirect to landing if authenticated)
@@ -32,7 +27,7 @@ const PublicRoute = ({ children, user }) => {
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [documentsUploaded, setDocumentsUploaded] = useState(true);
+  const [documentsUploaded, setDocumentsUploaded] = useState(true); // Add this state
 
   useEffect(() => {
     // Check for existing session
@@ -90,7 +85,10 @@ function App() {
   };
 
   const handlePageChange = (page) => {
+    // This function can be used for programmatic navigation
+    // For now, we'll use it for any page-specific logic
     console.log('Page change requested:', page);
+    // You can add navigation logic here if needed
   };
 
   // Show loading spinner while checking auth state
@@ -117,17 +115,6 @@ function App() {
                 user={user}
                 onLogout={handleLogout}
               />
-            }
-          />
-
-          {/* About ManuDocs Page - Accessible to all */}
-          <Route
-            path="/about"
-            element={
-              <div className="min-h-screen bg-white">
-                {/* You might want to create a separate AboutPageWrapper or reuse LandingPage structure */}
-                <AboutManuDocs />
-              </div>
             }
           />
 
@@ -175,54 +162,6 @@ function App() {
                   onPageChange={handlePageChange}
                   onLogout={handleLogout}
                   documentsUploaded={documentsUploaded}
-                />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/duty-calculator"
-            element={
-              <DutyCalculator
-                user={user}
-                onPageChange={handlePageChange}
-                onLogout={handleLogout}
-              />
-            }
-          />
-
-          {/* Fixed SmartDocGenerator Route */}
-          <Route
-            path="/smart-generate"
-            element={
-              <ProtectedRoute user={user}>
-                <SmartDocGenerator
-                  user={user}
-                  onPageChange={handlePageChange}
-                  onLogout={handleLogout}
-                  documentsUploaded={documentsUploaded}
-                />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/export-readiness-index"
-            element={
-              <ProtectedRoute user={user}>
-                <ExportReadinessIndex user={user} />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute user={user}>
-                <AnalyticsDashboard
-                  user={user}
-                  onPageChange={handlePageChange}
-                  onLogout={handleLogout}
                 />
               </ProtectedRoute>
             }

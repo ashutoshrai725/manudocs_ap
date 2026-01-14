@@ -35,7 +35,7 @@ const BackedBySection = () => {
         {
             name: 'PIEDS',
             logo: 'https://i.postimg.cc/CB5mM0tz/pieds-logo.jpg',
-            description: 'Incubation Program',
+            description: 'Incubation Centre BITS Pilani',
             type: 'Incubator',
             achievements: ['Startup Support', 'Mentorship', 'Guidance', 'Networking'],
             color: 'from-manu-light to-manu-light'
@@ -46,14 +46,13 @@ const BackedBySection = () => {
             description: 'Rakesh Kapoor Innovation Centre',
             type: 'Innovation Hub',
             achievements: ['Industry Connect', 'Prototyping', 'Networking', 'Workshops'],
-
         },
         {
             name: 'IOI',
             logo: 'https://i.postimg.cc/phrqVv7T/IOI-B.jpg',
-            description: 'Innovation Centre Bengaluru',
+            description: 'PW Innovation Centre Bengaluru',
             type: 'Tech Hub',
-            achievements: ['Bengaluru Base', 'Tech Innovation', 'Startup Ecosystem', 'Entrepreneurship'],
+            achievements: ['Bengaluru Base', 'Tech Innovation', 'Startup Ecosystem'],
             color: 'from-manu-light to-manu-light'
         }
     ];
@@ -112,7 +111,7 @@ const BackedBySection = () => {
 
         if (isLoaded === false || !partner.logo) {
             return (
-                <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${partner.color} rounded-xl ${className}`}>
+                <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${partner.color || 'from-gray-600 to-gray-700'} rounded-xl ${className}`}>
                     <span className="text-white font-bold text-sm">{partner.name.split(' ')[0]}</span>
                 </div>
             );
@@ -158,38 +157,16 @@ const BackedBySection = () => {
     };
 
     return (
-        <section className="relative py-12 md:py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 overflow-hidden" id="backed-by">
-            {/* Background Video */}
-            <div className="absolute inset-0 w-full h-full">
-                <video
-                    className="absolute top-0 left-0 w-full h-full object-cover opacity-70"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    src="/videos/backed-by.mp4"
-                >
-                    Your browser does not support the video tag.
-                </video>
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-manu-dark/80 via-gray-900/60 to-manu-green/50"></div>
-
-            </div>
-
-            {/* Animated Background Elements */}
-            <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-20 -right-20 w-40 h-40 md:w-80 md:h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute -bottom-20 -left-20 w-40 h-40 md:w-80 md:h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 md:w-96 md:h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse delay-500"></div>
-
-                {/* Grid Pattern */}
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute inset-0" style={{
-                        backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`,
-                        backgroundSize: '40px 40px'
-                    }}></div>
-                </div>
-            </div>
+        <section className="relative py-12 md:py-20 overflow-hidden" id="backed-by">
+            {/* Background Image - Replace with your image source */}
+            <div
+                className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-100"
+                style={{
+                    backgroundImage: "url('/images/007.jpg')" // Replace with your image path
+                }}
+            />
+            {/* Dark overlay for better text readability - EXACTLY LIKE FOOTER */}
+            <div className="absolute inset-0 bg-black/75"></div>
 
             <div className="relative container mx-auto px-4 sm:px-6 max-w-7xl">
                 {/* Header Section */}
@@ -200,16 +177,13 @@ const BackedBySection = () => {
                     viewport={{ once: true }}
                     className="text-center mb-12 md:mb-16"
                 >
-                    <div className="inline-flex items-center space-x-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-2 md:px-6 md:py-3 mb-4 md:mb-6">
-                        <Award className="w-4 h-4 md:w-5 md:h-5 text-green-400" />
-                        <span className="text-xs md:text-sm font-semibold text-green-400 tracking-wider">TRUSTED PARTNERSHIPS</span>
-                    </div>
 
-                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold text-white mb-4 md:mb-6 px-2">
-                        Backed By <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-400">Excellence</span>
+
+                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-manu-green mb-4 md:mb-6 px-2">
+                        Backed By <span className="text-transparent bg-clip-text bg-manu-green">Excellence</span>
                     </h2>
 
-                    <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed px-4">
+                    <p className="text-base sm:text-lg md:text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed px-4">
                         Supported by India's premier institutions and innovation ecosystems driving
                         cutting-edge research and entrepreneurial growth
                     </p>
@@ -222,11 +196,11 @@ const BackedBySection = () => {
                         <div className="flex justify-center space-x-4 mb-6">
                             <motion.button
                                 onClick={prevPartner}
-                                className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300"
+                                className="p-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >
-                                <ChevronLeft className="w-5 h-5 text-gray-400" />
+                                <ChevronLeft className="w-5 h-5 text-gray-300" />
                             </motion.button>
 
                             <div className="flex items-center space-x-2">
@@ -235,7 +209,7 @@ const BackedBySection = () => {
                                         key={index}
                                         onClick={() => goToPartner(index)}
                                         className={`w-2 h-2 rounded-full transition-all duration-300 ${index === activeIndex
-                                            ? 'bg-green-400 w-6'
+                                            ? 'bg-manu-green-400 w-6 shadow-lg'
                                             : 'bg-gray-600 hover:bg-gray-400'
                                             }`}
                                     />
@@ -244,11 +218,11 @@ const BackedBySection = () => {
 
                             <motion.button
                                 onClick={nextPartner}
-                                className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300"
+                                className="p-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >
-                                <ChevronRight className="w-5 h-5 text-gray-400" />
+                                <ChevronRight className="w-5 h-5 text-gray-300" />
                             </motion.button>
                         </div>
                     </div>
@@ -267,18 +241,18 @@ const BackedBySection = () => {
                                     key={partner.name}
                                     variants={itemVariants}
                                     onClick={() => goToPartner(index)}
-                                    className={`p-4 rounded-2xl backdrop-blur-sm border-2 transition-all duration-300 group ${activeIndex === index
-                                        ? 'bg-white/10 border-green-400/50 shadow-lg shadow-green-400/20'
-                                        : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-green-400/30'
+                                    className={`p-4 rounded-2xl  border-2 transition-all duration-300 group hover:shadow-xl ${activeIndex === index
+                                        ? 'bg-white/15 border-manu-green-400/50 shadow-lg shadow-manu-green-400/25'
+                                        : 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-manu-green-400/30'
                                         }`}
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                 >
                                     <div className="flex flex-col items-center space-y-3">
-                                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${partner.color} flex items-center justify-center p-2 group-hover:scale-110 transition-transform duration-300`}>
+                                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${partner.color || 'from-gray-600 to-gray-700'} flex items-center justify-center p-2 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                                             {getLogoContent(partner, "w-full h-full object-contain")}
                                         </div>
-                                        <span className={`text-sm font-semibold text-center ${activeIndex === index ? 'text-white' : 'text-gray-400'
+                                        <span className={`text-sm font-semibold text-center ${activeIndex === index ? 'text-white' : 'text-gray-300'
                                             } group-hover:text-white transition-colors`}>
                                             {partner.name}
                                         </span>
@@ -298,16 +272,16 @@ const BackedBySection = () => {
                                 animate="animate"
                                 exit="exit"
                                 transition={{ duration: 0.5 }}
-                                className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-2xl border border-white/10 backdrop-blur-sm mx-auto max-w-2xl"
+                                className="bg-white/5  rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-2xl border border-white/20 mx-auto max-w-2xl hover:shadow-3xl transition-all duration-300"
                             >
                                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
                                     {/* Logo and Basic Info */}
                                     <div className="flex-shrink-0 text-center md:text-left">
-                                        <div className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br ${partners[activeIndex].color} flex items-center justify-center p-3 md:p-4 shadow-lg mx-auto md:mx-0 mb-4`}>
+                                        <div className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br ${partners[activeIndex].color || 'from-gray-600 to-gray-700'} flex items-center justify-center p-3 md:p-4 shadow-xl mx-auto md:mx-0 mb-4 border border-white/20`}>
                                             {getLogoContent(partners[activeIndex], "w-full h-full object-contain")}
                                         </div>
 
-                                        <div className="inline-flex items-center space-x-2 bg-white/5 rounded-full px-3 py-1 md:px-4 md:py-2 border border-white/10">
+                                        <div className="inline-flex items-center space-x-2 bg-white/10 rounded-full px-3 py-1 md:px-4 md:py-2 border border-white/20">
                                             <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-400" />
                                             <span className="text-xs md:text-sm font-semibold text-yellow-400">{partners[activeIndex].type}</span>
                                         </div>
@@ -319,69 +293,30 @@ const BackedBySection = () => {
                                             {partners[activeIndex].name}
                                         </h3>
 
-                                        <p className="text-base md:text-lg text-gray-300 mb-4 md:mb-6 leading-relaxed">
+                                        <p className="text-base md:text-lg text-gray-200 mb-4 md:mb-6 leading-relaxed">
                                             {partners[activeIndex].description}
                                         </p>
 
                                         {/* Achievements */}
                                         <div className="space-y-3 mb-6">
-                                            <div className="flex items-center space-x-2 text-green-400 justify-center md:justify-start">
-                                                <Rocket className="w-4 h-4 md:w-5 md:h-5" />
-                                                <span className="font-semibold text-sm md:text-base">Key Achievements</span>
-                                            </div>
+
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                 {partners[activeIndex].achievements.map((achievement, idx) => (
-                                                    <div key={idx} className="flex items-center space-x-2 text-xs md:text-sm text-gray-300">
-                                                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full flex-shrink-0"></div>
+                                                    <div key={idx} className="flex items-center space-x-2 text-xs md:text-sm text-gray-200">
+                                                        <div className="w-1.5 h-1.5 bg-manu-green-400 rounded-full flex-shrink-0 shadow-sm"></div>
                                                         <span className="break-words">{achievement}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
 
-                                        {/* Navigation Controls - Hidden on mobile, shown on desktop */}
-                                        <div className="hidden md:flex items-center justify-center md:justify-start space-x-4">
-                                            <motion.button
-                                                onClick={prevPartner}
-                                                className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 group"
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                            >
-                                                <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                                            </motion.button>
 
-                                            <div className="flex space-x-2">
-                                                {partners.map((_, index) => (
-                                                    <button
-                                                        key={index}
-                                                        onClick={() => goToPartner(index)}
-                                                        className={`w-2 h-2 rounded-full transition-all duration-300 ${index === activeIndex
-                                                            ? 'bg-green-400 w-6'
-                                                            : 'bg-gray-600 hover:bg-gray-400'
-                                                            }`}
-                                                    />
-                                                ))}
-                                            </div>
-
-                                            <motion.button
-                                                onClick={nextPartner}
-                                                className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 group"
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                            >
-                                                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                                            </motion.button>
-                                        </div>
                                     </div>
                                 </div>
                             </motion.div>
                         </AnimatePresence>
                     </div>
                 </div>
-
-
-
-
             </div>
         </section>
     );
