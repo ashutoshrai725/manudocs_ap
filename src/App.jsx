@@ -7,7 +7,8 @@ import AuthPage from './components/Auth/AuthPage.jsx';
 import DocumentUploadPage from './components/Upload/DocumentUploadPage.jsx';
 import AIAgentPage from './components/AIAgent/AIAgentPage.jsx';
 import AIAgent2Page from './components/AIAgent/AIAgent2Page.jsx';
-import LoadingSpinner from './components/common/LoadingSpinner.jsx'; // You can create this component
+import LoadingSpinner from './components/common/LoadingSpinner.jsx';
+import AboutUs from './components/AboutUs';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL || import.meta.env.REACT_APP_SUPABASE_URL,
@@ -116,6 +117,16 @@ function App() {
                 onLogout={handleLogout}
               />
             }
+          />
+
+          <Route
+            path="/about_us"
+            element={<AboutUs />}
+          />
+
+          <Route
+            path="/about_us/:section"
+            element={<AboutUs />}
           />
 
           {/* Auth Page - Only accessible when not logged in */}

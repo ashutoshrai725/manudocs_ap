@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut, Settings, HelpCircle, Phone, Mail, MessageCircle, ChevronDown, ExternalLink, Sun, Moon } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, HelpCircle, Phone, Mail, MessageCircle, ChevronDown, ExternalLink, Sun, Moon, Info } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Header = ({ user, onLogout }) => {
     const navigate = useNavigate();
@@ -8,11 +9,10 @@ const Header = ({ user, onLogout }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [infoVisible, setInfoVisible] = useState(null);
-    const [darkMode, setDarkMode] = useState(true); // Default to dark mode
+    const [darkMode, setDarkMode] = useState(true);
     const profileRef = useRef(null);
     const helpRef = useRef(null);
     const contactRef = useRef(null);
-
 
     // Close mobile menu when route changes
     useEffect(() => {
@@ -96,8 +96,8 @@ const Header = ({ user, onLogout }) => {
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
 
-                        {/* Logo Section */}
-                        <div className="flex items-center space-x-3">
+                        {/* Logo Section with Info Icon on Mobile */}
+                        <div className="flex items-center space-x-2">
                             <button
                                 onClick={() => navigate('/')}
                                 className="flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 rounded-xl p-2 transition-all duration-200 hover:scale-105"
@@ -117,6 +117,15 @@ const Header = ({ user, onLogout }) => {
                                     </span>
                                     <span className="text-xs text-gray-400 font-medium -mt-1"></span>
                                 </div>
+                            </button>
+
+                            {/* About Us Icon - Mobile Only */}
+                            <button
+                                onClick={() => navigate('/about_us')}
+                                className="lg:hidden p-4 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-green-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
+                                aria-label="About Us"
+                            >
+                                <Info size={18} />
                             </button>
                         </div>
 
@@ -146,67 +155,13 @@ const Header = ({ user, onLogout }) => {
                                 <span>Upload Docs</span>
                             </button>
 
-
-
-
-                            {/* Help Dropdown */}
-                            <div className="relative" ref={helpRef}>
-                                <button
-                                    onClick={() => setInfoVisible(infoVisible === 'help' ? null : 'help')}
-                                    className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-300 hover:bg-gray-800 hover:text-green-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
-                                >
-                                    <HelpCircle size={16} />
-                                    <span>Help</span>
-                                    <ChevronDown size={14} className={`transition-transform duration-200 ${infoVisible === 'help' ? 'rotate-180' : ''}`} />
-                                </button>
-
-                                {infoVisible === 'help' && (
-                                    <div className="absolute top-full left-0 mt-2 w-80 bg-gray-800 rounded-2xl shadow-2xl border border-gray-700/60 backdrop-blur-xl z-50 overflow-hidden">
-                                        <div className="p-6">
-                                            <div className="flex items-center space-x-3 mb-4">
-                                                <div className="w-10 h-10 bg-green-900/50 rounded-xl flex items-center justify-center">
-                                                    <HelpCircle className="text-green-400" size={20} />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-bold text-white">Getting Started Guide</h3>
-                                                    <p className="text-sm text-gray-400">Follow these steps to begin</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                <div className="flex items-start space-x-3 p-3 bg-green-900/20 rounded-xl border border-green-800/30">
-                                                    <div className="w-6 h-6 bg-green-500 text-gray-900 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">1</div>
-                                                    <div>
-                                                        <p className="font-semibold text-manu-green">Sign Up / Login</p>
-                                                        <p className="text-sm text-green-200/80">Create your account or sign in</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-start space-x-3 p-3 bg-blue-900/20 rounded-xl border border-blue-800/30">
-                                                    <div className="w-6 h-6 bg-blue-500 text-gray-900 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">2</div>
-                                                    <div>
-                                                        <p className="font-semibold text-blue-300">Upload Documents</p>
-                                                        <p className="text-sm text-blue-200/80">Upload your identity and company documents</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-start space-x-3 p-3 bg-purple-900/20 rounded-xl border border-purple-800/30">
-                                                    <div className="w-6 h-6 bg-purple-500 text-gray-900 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">3</div>
-                                                    <div>
-                                                        <p className="font-semibold text-purple-300">Generate Documents</p>
-                                                        <p className="text-sm text-purple-200/80">Use AI Agent to create export documents</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <button className="w-full mt-4 bg-green-600 text-white py-2.5 rounded-xl font-semibold hover:bg-green-500 transition-colors duration-200 flex items-center justify-center space-x-2">
-                                                <ExternalLink size={14} />
-                                                <span>View Full Documentation</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            <Link
+                                to="/about_us"
+                                className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-300 hover:bg-gray-800 hover:text-green-400 transition-all duration-200"
+                            >
+                                <Info size={16} />
+                                <span>About Us</span>
+                            </Link>
 
                             {/* Contact Dropdown */}
                             <div className="relative" ref={contactRef}>
@@ -364,9 +319,6 @@ const Header = ({ user, onLogout }) => {
                                 >
                                     Upload Documents
                                 </button>
-
-
-
 
                                 <button
                                     onClick={() => setInfoVisible('contact')}

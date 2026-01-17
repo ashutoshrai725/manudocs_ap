@@ -42,10 +42,11 @@ const BackedBySection = () => {
         },
         {
             name: 'RKIC',
-            logo: 'https://i.postimg.cc/N9FpGtVy/rkic.jpg',
+            logo: 'https://i.postimg.cc/sghhx5tS/rkic.png',
             description: 'Rakesh Kapoor Innovation Centre',
             type: 'Innovation Hub',
             achievements: ['Industry Connect', 'Prototyping', 'Networking', 'Workshops'],
+            color: 'from-manu-light to-manu-light'
         },
         {
             name: 'IOI',

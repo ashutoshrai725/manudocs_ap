@@ -225,17 +225,17 @@ const AboutManuDocs = () => {
                                                     >
                                                         <div className="relative">
                                                             <div
-                                                                className="absolute inset-0 rounded-2xl blur-lg opacity-60 transition-opacity bg-manu-green-500/30"
+                                                                className="absolute inset-0 rounded-2xl blur-lg opacity-60 transition-opacity bg-manu-green"
                                                             />
                                                             <div
-                                                                className="relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 bg-white/90 shadow-xl border border-manu-green-500/50"
+                                                                className="relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 bg-white/90 shadow-xl border border-manu-green"
                                                             >
-                                                                <step.icon className="w-5 h-5 text-manu-green-600" />
+                                                                <step.icon className="w-5 h-5 text-manu-green" />
                                                             </div>
                                                         </div>
 
                                                         <div
-                                                            className="h-2 w-2 rounded-full animate-pulse bg-manu-green-500 shadow-lg"
+                                                            className="h-2 w-2 rounded-full animate-pulse bg-manu-green shadow-lg"
                                                         />
                                                     </motion.div>
 

@@ -159,98 +159,6 @@ const AIAgentPage = ({ user, onPageChange, onLogout, documentsUploaded = true })
             { field: 'packing_info', question: 'Let\'s add packing information for your products.', type: 'packing', required: true, category: 'packing' },
         ],
 
-        delivery_challan: [
-            { field: 'delivery_address', question: 'What is the delivery address?', type: 'textarea', required: true, category: 'delivery' },
-            { field: 'vehicle_number', question: 'What is the vehicle number for delivery?', type: 'text', required: true, category: 'delivery' },
-            { field: 'received_by_name', question: 'Who should receive the goods?', type: 'text', required: true, category: 'delivery' },
-            { field: 'delivery_instructions', question: 'Any special delivery instructions?', type: 'textarea', required: false, category: 'delivery' },
-            { field: 'invoice_number', question: 'What is the invoice reference number?', type: 'text', required: true, category: 'documents' },
-            { field: 'invoice_date', question: 'What is the invoice date?', type: 'date', required: true, category: 'documents' },
-            { field: 'products', question: 'Let\'s add products for the delivery challan.', type: 'products', required: true, category: 'products' },
-        ],
-
-        credit_note: [
-            { field: 'note_type', question: 'What type of adjustment note?', type: 'select', options: ['Credit Note', 'Debit Note'], required: true, category: 'adjustments' },
-            { field: 'note_reason', question: 'Reason for the credit/debit note?', type: 'select', options: ['Goods returned', 'Price adjustment', 'Discount', 'Damage', 'Additional charges', 'Tax adjustment'], required: true, category: 'adjustments' },
-            { field: 'original_invoice_number', question: 'What is the original invoice number?', type: 'text', required: true, category: 'adjustments' },
-            { field: 'original_invoice_date', question: 'What is the original invoice date?', type: 'date', required: true, category: 'adjustments' },
-            { field: 'adjustment_type', question: 'Type of adjustment?', type: 'select', options: ['Full return', 'Partial return', 'Price adjustment', 'Additional charges'], required: true, category: 'adjustments' },
-            { field: 'products', question: 'Let\'s add products for the credit note.', type: 'products', required: true, category: 'products' },
-        ],
-
-        debit_note: [
-            { field: 'note_type', question: 'What type of adjustment note?', type: 'select', options: ['Credit Note', 'Debit Note'], required: true, category: 'adjustments' },
-            { field: 'note_reason', question: 'Reason for the credit/debit note?', type: 'select', options: ['Goods returned', 'Price adjustment', 'Discount', 'Damage', 'Additional charges', 'Tax adjustment'], required: true, category: 'adjustments' },
-            { field: 'original_invoice_number', question: 'What is the original invoice number?', type: 'text', required: true, category: 'adjustments' },
-            { field: 'original_invoice_date', question: 'What is the original invoice date?', type: 'date', required: true, category: 'adjustments' },
-            { field: 'adjustment_type', question: 'Type of adjustment?', type: 'select', options: ['Full return', 'Partial return', 'Price adjustment', 'Additional charges'], required: true, category: 'adjustments' },
-            { field: 'products', question: 'Let\'s add products for the debit note.', type: 'products', required: true, category: 'products' },
-        ],
-
-        certificate_of_origin: [
-            { field: 'certificate_type', question: 'What type of Certificate of Origin is required?', type: 'select', options: ['Form A', 'Non-preferential', 'Preferential', 'General'], required: true, category: 'certificates' },
-            { field: 'origin_criteria', question: 'What is the origin criteria for the goods?', type: 'select', options: ['Wholly obtained', 'Sufficiently processed', 'Regional value content'], required: true, category: 'certificates' },
-            { field: 'customs_authority', question: 'Which customs authority will issue the certificate?', type: 'text', required: true, category: 'certificates' },
-            { field: 'manufacturing_address', question: 'What is the manufacturing address (if different from exporter address)?', type: 'textarea', required: false, category: 'certificates' },
-            { field: 'additional_instructions', question: 'Any additional declaration information?', type: 'textarea', required: false, category: 'additional' },
-            { field: 'products', question: 'Let\'s add products for the certificate of origin.', type: 'products', required: true, category: 'products' },
-        ],
-
-        bill_of_lading: [
-            { field: 'bl_type', question: 'What type of Bill of Lading is required?', type: 'select', options: ['Sea Waybill', 'Express Release', 'Telex Release', 'Original'], required: true, category: 'shipping_docs' },
-            { field: 'number_of_originals', question: 'How many original Bills of Lading should be issued?', type: 'number', required: true, category: 'shipping_docs' },
-            { field: 'notify_party_same_as_consignee', question: 'Is the notify party the same as the consignee?', type: 'select', options: ['Yes', 'No'], required: true, category: 'notify_party' },
-            { field: 'notify_party_company_name', question: 'What is the notify party\'s company name?', type: 'text', required: false, condition: { field: 'notify_party_same_as_consignee', value: 'No' }, category: 'notify_party' },
-            { field: 'notify_party_address', question: 'What is the notify party\'s complete address?', type: 'textarea', required: false, condition: { field: 'notify_party_same_as_consignee', value: 'No' }, category: 'notify_party' },
-            { field: 'freight_terms', question: 'What are the freight terms?', type: 'select', options: ['Prepaid', 'Collect', 'Third Party'], required: true, category: 'freight' },
-            { field: 'flight_number', question: 'What is the flight number? (for air shipments)', type: 'text', required: false, category: 'shipment', condition: { field: 'dispatch_method', value: 'Air' } },
-            { field: 'airport_of_departure', question: 'What is the airport of departure? (IATA code)', type: 'text', required: false, category: 'shipment', condition: { field: 'dispatch_method', value: 'Air' } },
-            { field: 'airport_of_destination', question: 'What is the airport of destination? (IATA code)', type: 'text', required: false, category: 'shipment', condition: { field: 'dispatch_method', value: 'Air' } },
-            { field: 'additional_instructions', question: 'Any special shipping instructions?', type: 'textarea', required: false, category: 'additional' },
-            { field: 'packing_info', question: 'Let\'s add packing information for the bill of lading.', type: 'packing', required: true, category: 'packing' },
-        ],
-
-        shipping_instructions: [
-            { field: 'forwarder_company', question: 'What is your freight forwarder company name?', type: 'text', required: true, category: 'shipping_docs' },
-            { field: 'forwarder_contact', question: 'What is the freight forwarder contact person?', type: 'text', required: true, category: 'shipping_docs' },
-            { field: 'special_handling', question: 'Any special handling instructions?', type: 'textarea', required: false, category: 'shipping_docs' },
-            { field: 'documents_required', question: 'Which documents are required for this shipment?', type: 'multiselect', options: ['Commercial Invoice', 'Packing List', 'Certificate of Origin', 'Bill of Lading', 'Insurance Certificate', 'Export Declaration'], required: true, category: 'shipping_docs' },
-            { field: 'notify_party_same_as_consignee', question: 'Is the notify party the same as the consignee?', type: 'select', options: ['Yes', 'No'], required: true, category: 'notify_party' },
-            { field: 'notify_party_company_name', question: 'What is the notify party\'s company name?', type: 'text', required: false, condition: { field: 'notify_party_same_as_consignee', value: 'No' }, category: 'notify_party' },
-            { field: 'notify_party_address', question: 'What is the notify party\'s complete address?', type: 'textarea', required: false, condition: { field: 'notify_party_same_as_consignee', value: 'No' }, category: 'notify_party' },
-            { field: 'packing_info', question: 'Let\'s add packing information for shipping instructions.', type: 'packing', required: true, category: 'packing' },
-        ],
-
-        export_declaration: [
-            { field: 'export_purpose', question: 'What is the purpose of export?', type: 'select', options: ['Sale', 'Return', 'Repair', 'Sample', 'Exhibition'], required: true, category: 'declarations' },
-            { field: 'license_details', question: 'Any export license details?', type: 'text', required: false, category: 'declarations' },
-            { field: 'customs_office', question: 'Which customs office will handle the export?', type: 'text', required: true, category: 'declarations' },
-            { field: 'declaration_number', question: 'What is the export declaration number?', type: 'text', required: false, category: 'declarations' },
-            { field: 'additional_instructions', question: 'Any additional declaration information?', type: 'textarea', required: false, category: 'additional' },
-            { field: 'products', question: 'Let\'s add products for the export declaration.', type: 'products', required: true, category: 'products' },
-        ],
-
-        air_waybill: [
-            { field: 'airport_of_departure', question: 'What is the airport of departure? (IATA code)', type: 'text', required: true, category: 'shipment' },
-            { field: 'airport_of_destination', question: 'What is the airport of destination? (IATA code)', type: 'text', required: true, category: 'shipment' },
-            { field: 'flight_number', question: 'What is the flight number?', type: 'text', required: true, category: 'shipment' },
-            { field: 'notify_party_same_as_consignee', question: 'Is the notify party the same as the consignee?', type: 'select', options: ['Yes', 'No'], required: true, category: 'notify_party' },
-            { field: 'notify_party_company_name', question: 'What is the notify party\'s company name?', type: 'text', required: false, condition: { field: 'notify_party_same_as_consignee', value: 'No' }, category: 'notify_party' },
-            { field: 'notify_party_address', question: 'What is the notify party\'s complete address?', type: 'textarea', required: false, condition: { field: 'notify_party_same_as_consignee', value: 'No' }, category: 'notify_party' },
-            { field: 'special_handling', question: 'Any special handling instructions for air freight?', type: 'textarea', required: false, category: 'shipping_docs' },
-            { field: 'packing_info', question: 'Let\'s add packing information for the air waybill.', type: 'packing', required: true, category: 'packing' },
-        ],
-
-        insurance_certificate: [
-            { field: 'insurance_company', question: 'What is the insurance company name?', type: 'text', required: true, category: 'freight' },
-            { field: 'insurance_policy', question: 'What is the Marine Cover Policy No?', type: 'text', required: true, category: 'payment' },
-            { field: 'coverage_type', question: 'What type of insurance coverage?', type: 'select', options: ['All Risk', 'FPA (Free of Particular Average)', 'WA (With Average)'], required: true, category: 'freight' },
-            { field: 'insured_value', question: 'What is the insured value of the shipment?', type: 'number', required: true, category: 'freight' },
-            { field: 'premium_amount', question: 'What is the insurance premium amount?', type: 'number', required: true, category: 'freight' },
-            { field: 'claims_payable_at', question: 'Where are claims payable?', type: 'text', required: true, category: 'freight' },
-            { field: 'additional_instructions', question: 'Any special insurance terms?', type: 'textarea', required: false, category: 'additional' },
-        ],
-
         quotation: [
             { field: 'quotation_validity', question: 'How many days is this quotation valid?', type: 'number', required: true, category: 'quotation' },
             { field: 'payment_terms_detailed', question: 'Detailed payment terms for quotation?', type: 'textarea', required: true, category: 'quotation' },
@@ -849,15 +757,6 @@ const AIAgentPage = ({ user, onPageChange, onLogout, documentsUploaded = true })
             commercial_invoice: 'Commercial Invoice',
             proforma_invoice: 'Proforma Invoice',
             packing_list: 'Packing List',
-            delivery_challan: 'Delivery Challan',
-            credit_note: 'Credit Note',
-            debit_note: 'Debit Note',
-            certificate_of_origin: 'Certificate of Origin',
-            bill_of_lading: 'Bill of Lading',
-            shipping_instructions: 'Shipping Instructions',
-            export_declaration: 'Export Declaration',
-            air_waybill: 'Air Waybill',
-            insurance_certificate: 'Insurance Certificate',
             quotation: 'Quotation'
         };
         return templateNames[templateId] || templateId;
@@ -1758,21 +1657,12 @@ const AIAgentPage = ({ user, onPageChange, onLogout, documentsUploaded = true })
         );
     };
 
-    // Template selection component
+    // Template selection component - ONLY 4 DOCUMENTS NOW
     const renderTemplateSelector = () => {
         const templates = [
             { id: 'commercial_invoice', name: 'Commercial Invoice', desc: 'Main international trade invoice with compliance details', icon: '📄' },
             { id: 'proforma_invoice', name: 'Proforma Invoice', desc: 'Quotation document for international buyers', icon: '📋' },
             { id: 'packing_list', name: 'Packing List', desc: 'Detailed packaging and shipping information', icon: '📦' },
-            { id: 'delivery_challan', name: 'Delivery Challan', desc: 'Proof of goods delivery', icon: '🚚' },
-            { id: 'credit_note', name: 'Credit Note', desc: 'Reduce amount in original invoice', icon: '💳' },
-            { id: 'debit_note', name: 'Debit Note', desc: 'Increase amount in original invoice', icon: '💳' },
-            { id: 'certificate_of_origin', name: 'Certificate of Origin', desc: 'Certify goods origin for customs', icon: '🌍' },
-            { id: 'bill_of_lading', name: 'Bill of Lading', desc: 'Contract between shipper and carrier', icon: '📑' },
-            { id: 'shipping_instructions', name: 'Shipping Instructions', desc: 'Instructions to freight forwarder', icon: '📝' },
-            { id: 'export_declaration', name: 'Export Declaration', desc: 'Customs declaration for export', icon: '🏛️' },
-            { id: 'air_waybill', name: 'Air Waybill', desc: 'Air freight contract', icon: '✈️' },
-            { id: 'insurance_certificate', name: 'Insurance Certificate', desc: 'Proof of shipment insurance', icon: '🛡️' },
             { id: 'quotation', name: 'Quotation', desc: 'Price quote for potential buyer', icon: '💰' }
         ];
 
@@ -1782,7 +1672,7 @@ const AIAgentPage = ({ user, onPageChange, onLogout, documentsUploaded = true })
                     Select the documents you want to generate. I will ask only the necessary questions for your selected documents.
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {templates.map((template) => (
                         <label
                             key={template.id}
