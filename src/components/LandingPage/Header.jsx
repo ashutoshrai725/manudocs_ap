@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut, Settings, HelpCircle, Phone, Mail, MessageCircle, ChevronDown, ExternalLink, Sun, Moon, Info } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, HelpCircle, Phone, Mail, MessageCircle, ChevronDown, ExternalLink, Sun, Moon, Info, FileText } from 'lucide-react'; // Added FileText
 import { Link } from 'react-router-dom';
 
 const Header = ({ user, onLogout }) => {
@@ -96,37 +96,48 @@ const Header = ({ user, onLogout }) => {
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
 
-                        {/* Logo Section with Info Icon on Mobile */}
-                        <div className="flex items-center space-x-2">
+                        {/* Logo Section - DON'T CHANGE THIS PART */}
+                        <div className="flex items-center space-x-1.5">
                             <button
                                 onClick={() => navigate('/')}
-                                className="flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 rounded-xl p-2 transition-all duration-200 hover:scale-105"
+                                className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 rounded-xl p-2 transition-all duration-200 hover:scale-105"
                             >
                                 <div className="relative">
                                     <img
-                                        src="https://i.postimg.cc/qhqjBrYN/mnuverse.jpg"
+                                        src="https://i.postimg.cc/GmQwgTBx/favicon_96x96.png"
                                         alt="MANUDOCS Logo"
-                                        className="h-10 w-10 rounded-xl shadow-lg border-2 border-green-400/30"
+                                        className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl shadow-lg border-2 border-green-400/30"
                                         onError={handleImageError}
                                     />
                                     <div className="absolute -inset-1 bg-green-500/10 rounded-xl blur-sm -z-10"></div>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-2xl font-black bg-manu-green bg-clip-text text-transparent tracking-tight">
+                                    <span className="text-lg sm:text-2xl font-black bg-manu-green bg-clip-text text-transparent tracking-tight">
                                         ManuDocs
                                     </span>
                                     <span className="text-xs text-gray-400 font-medium -mt-1"></span>
                                 </div>
                             </button>
 
-                            {/* About Us Icon - Mobile Only */}
+                            {/* ORIGINAL ABOUT US BUTTON - REVERTED BACK */}
                             <button
                                 onClick={() => navigate('/about_us')}
-                                className="lg:hidden p-4 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-green-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
+                                className="lg:hidden p-3 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-green-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
                                 aria-label="About Us"
                             >
-                                <Info size={18} />
+                                <Info size={18} /> {/* YEH ABOUT US ICON HI RAHEGA */}
                             </button>
+
+                            {/* NEW BLOG BUTTON ADDED NEXT TO ABOUT US BUTTON */}
+                            <a
+                                href="https://blogs.manudocs.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="lg:hidden p-3 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-green-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
+                                aria-label="Blogs"
+                            >
+                                <FileText size={18} /> {/* YEH NAYA BLOG ICON */}
+                            </a>
                         </div>
 
                         {/* Desktop Navigation */}
@@ -163,61 +174,17 @@ const Header = ({ user, onLogout }) => {
                                 <span>About Us</span>
                             </Link>
 
-                            {/* Contact Dropdown */}
-                            <div className="relative" ref={contactRef}>
-                                <button
-                                    onClick={() => setInfoVisible(infoVisible === 'contact' ? null : 'contact')}
-                                    className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-300 hover:bg-gray-800 hover:text-green-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
-                                >
-                                    <Phone size={16} />
-                                    <span>Contact</span>
-                                    <ChevronDown size={14} className={`transition-transform duration-200 ${infoVisible === 'contact' ? 'rotate-180' : ''}`} />
-                                </button>
-
-                                {infoVisible === 'contact' && (
-                                    <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-2xl shadow-2xl border border-gray-700/60 backdrop-blur-xl z-50 overflow-hidden">
-                                        <div className="p-6">
-                                            <div className="flex items-center space-x-3 mb-4">
-                                                <div className="w-10 h-10 bg-blue-900/50 rounded-xl flex items-center justify-center">
-                                                    <Phone className="text-blue-400" size={20} />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-bold text-white">Contact Support</h3>
-                                                    <p className="text-sm text-gray-400">We're here to help you</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-4">
-                                                <div className="flex items-center space-x-3 p-3 bg-gray-700/50 rounded-xl border border-gray-600/30">
-                                                    <Mail className="text-gray-400" size={16} />
-                                                    <div>
-                                                        <p className="font-semibold text-white">Email</p>
-                                                        <p className="text-sm text-gray-300">manudocs.ai@gmail.com</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <p className="font-semibold text-white text-sm">Phone Support</p>
-                                                    <div className="space-y-1">
-                                                        {['+91 89495 22947', '+91 7697546063', '+91 9958889387', '+91 6376400524'].map((phone, index) => (
-                                                            <div key={index} className="flex items-center space-x-2 text-sm text-gray-300 hover:text-green-400 cursor-pointer transition-colors">
-                                                                <Phone size={12} />
-                                                                <span>{phone}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-4 p-3 bg-green-900/30 rounded-xl border border-green-800/30">
-                                                <p className="text-sm text-green-300 font-medium text-center">
-                                                    📞 Available 24/7 for urgent export document queries
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            {/* Blogs Button - Desktop */}
+                            <a
+                                href="https://blogs.manudocs.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-300 hover:bg-gray-800 hover:text-green-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
+                            >
+                                <FileText size={16} />
+                                <span>Blogs</span>
+                                <ExternalLink size={14} className="opacity-70" />
+                            </a>
                         </nav>
 
                         {/* Right Side - Auth or Profile */}
@@ -320,12 +287,26 @@ const Header = ({ user, onLogout }) => {
                                     Upload Documents
                                 </button>
 
+                                {/* About Us in Mobile Menu */}
                                 <button
-                                    onClick={() => setInfoVisible('contact')}
-                                    className="block w-full text-left px-4 py-3 rounded-xl text-sm font-semibold bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-green-400 transition-all duration-200"
+                                    onClick={() => navigate('/about_us')}
+                                    className="flex items-center space-x-2 w-full text-left px-4 py-2 rounded-xl text-sm font-semibold bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-green-400 transition-all duration-200"
                                 >
-                                    Contact Us
+                                    <Info size={16} />
+                                    <span>About Us</span>
                                 </button>
+
+                                {/* Blogs in Mobile Menu */}
+                                <a
+                                    href="https://blogs.manudocs.com"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center space-x-2 w-full text-left px-4 py-3 rounded-xl text-sm font-semibold bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-green-400 transition-all duration-200"
+                                >
+                                    <FileText size={16} />
+                                    <span>Blogs</span>
+                                    <ExternalLink size={14} className="ml-auto opacity-70" />
+                                </a>
 
                                 {/* Mobile Auth Section */}
                                 <div className="pt-4 border-t border-gray-700">
@@ -366,7 +347,7 @@ const Header = ({ user, onLogout }) => {
                 </div>
             </header>
 
-            {/* Mobile Info Overlay */}
+            {/* Contact overlay - kept original */}
             {(infoVisible === 'help' || infoVisible === 'contact') && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden" onClick={() => setInfoVisible(null)}>
                     <div className="fixed bottom-0 left-0 right-0 bg-gray-800 rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto border-t border-gray-700">

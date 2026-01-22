@@ -95,15 +95,15 @@ const AboutManuDocs = () => {
                                 className="bg-clip-text text-transparent"
                                 style={{
                                     backgroundImage:
-                                        "linear-gradient(90deg, #f97316 0%, #f97316 35%, #f5f5f5 60%, #16a34a 100%)",
+                                        "linear-gradient(90deg, #ff8000ff 0%, #f97316 20%, #f5f5f5 40%, #ffffff 60%, #02ff5fff 80%, #138808 100%)",
                                 }}
                             >
                                 India&apos;s
-                            </span>{' '}
-                            <span className="text-manu-green">
-                                Unified Trade Interface
-                            </span>
+                                Unified Digital Trade Interface
+                            </span>{" "}
                         </h1>
+
+
 
                     </div>
 

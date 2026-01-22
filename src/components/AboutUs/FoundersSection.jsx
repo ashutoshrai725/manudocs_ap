@@ -14,7 +14,7 @@ const FoundersSection = () => {
     const founders = [
         {
             name: "Sumit Singh Rahar",
-            role: "Co-Founder & CEO",
+            role: "Founder & CEO",
             image: "https://i.postimg.cc/Gm2kGrQz/rkic3.jpg",
             quote: "I don’t build for quarters or years...I build systems meant to shape nations, industries, and governments over decades",
             bio: `I am a long term thinker and a visionary observer who plans in decades, not years. My work is driven by the belief that nations are not transformed by shortterm products, but by systems that reshape how people, industries, and governments operate together.
@@ -58,49 +58,6 @@ I believe that with deep research, clear thinking, and the right technological a
             },
             photoPosition: "right"
         },
-        {
-            name: "Mohit Jangir",
-            role: "Co-Founder & CMO",
-            image: "https://i.postimg.cc/3xFx8Dmw/mohit.jpg",
-            quote: "Connecting exporters worldwide ",
-            bio: `Marketing is about storytelling, and every exporter has a powerful story to tell. My mission is to amplify those voices.
-
-The export industry is fragmented, with countless businesses operating in isolation. ManuDocs isn't just a tool – it's a community, a movement towards smarter, collaborative trade.
-
-Through strategic partnerships, content, and community building, we're creating a global network of informed, empowered exporters.
-
-I believe that when we simplify compliance and documentation, we unlock human potential – allowing entrepreneurs to focus on what they do best: building great products and serving customers worldwide.`,
-            socials: {
-                linkedin: "https://www.linkedin.com/in/mohitjangirworks/",
-                twitter: "https://x.com/mohiit_jangid",
-                instagram: "https://www.instagram.com/mohiit.jangid/",
-                email: "mohitjangirworks@gmail.com"
-            },
-            photoPosition: "left"
-        },
-        {
-            name: "Rudra Purohit",
-            role: "Co-Founder & COO",
-            image: "https://i.postimg.cc/N06jqFmg/1000071098.jpg",
-            quote: "I Question Assumptions and Build with Intent.",
-            bio: `I see the world through observation...how systems function, how value is created, and why execution fails more often than vision. Growing up, dhanda was a word used casually in my family, but over time it became central to how I think about building anything meaningful.
-
-            That way of thinking naturally pulled me toward understanding people how they think, how decisions are made, and how real knowledge is formed through practice rather than assumptions. For me, identifying a problem is only the beginning. What matters equally is explaining it clearly, earning trust around it, and taking responsibility for how it is carried forward. Sales, partnerships, and growth are not separate functions in my mind they are ways of validating whether a solution actually works in the real world. At the same time, understanding how processes operate on the ground is essential, because growth without operational clarity only scales confusion.
-
-            This perspective also shapes how I view the trade industry. I believe meaningful change comes from those who enter an industry with fresh eyes and question accepted norms, not from those who understand every loop but grow comfortable saying, “this is how it works.” Knowing the system explains problems; challenging assumptions creates progress.
-
-            ManuDocs emerged from this way of thinking. Our North Star is to bring clarity, structure, and trust to a trade ecosystem that has long operated through fragmentation and manual effort. Our aim is to make export and import processes as clear and accessible as operating in the domestic market by increasing transparency, reducing dependency, and removing unnecessary complexity. We focus on building systems that work within real world constraints and are practical to adopt, rather than imagining solutions disconnected from how trade actually functions today.
-
-            I believe meaningful progress comes from asking the right questions, respecting reality, and executing with discipline. When trade systems become clearer and more reliable, businesses operate with greater confidence and that strength compounds at a national level. ManuDocs is being built with this mindset: strengthening self reliance through better systems, reducing dependency through clarity, and contributing to a more resilient and capable trade ecosystem over time.
-`,
-            socials: {
-                linkedin: "https://www.linkedin.com/in/rudrra-purohit-4a59a1312/",
-                twitter: "https://x.com/rudrapurohit72",
-                instagram: "https://www.instagram.com/rudrra_purohit/",
-                email: "rudrapurohit72@gmail.com"
-            },
-            photoPosition: "right"
-        }
     ];
 
     return (

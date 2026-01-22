@@ -9,14 +9,6 @@ const BackedBySection = () => {
 
     const partners = [
         {
-            name: 'IIT MADRAS',
-            logo: 'https://i.postimg.cc/CZmcV5vk/iitm.png',
-            description: 'NIRF 1 Ranked Institute',
-            type: 'Premier Institute',
-            achievements: ['NIRF Rank #1', 'Established 1959', '300+ Patents', '1500+ Research Papers'],
-            color: 'from-manu-iitm to-manu-iitm'
-        },
-        {
             name: 'BITS Pilani',
             logo: 'https://i.postimg.cc/bG3mjr6t/BITS-Pilani-Logo.png',
             description: 'Premier Engineering Institute',
