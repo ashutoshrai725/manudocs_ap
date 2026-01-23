@@ -15,23 +15,7 @@ const MissionSection = () => {
                     <div className="w-16 md:w-20 h-1 bg-manu-green mx-auto"></div>
                 </div>
 
-                {/* Logo Image - Landscape - Smaller on mobile */}
-                <div className="mb-6 md:mb-10">
-                    <div className="w-full max-w-xl mx-auto h-32 md:h-64 lg:h-80 bg-gradient-to-r from-manu-green/10 to-green-600/10 rounded-xl md:rounded-2xl overflow-hidden border border-manu-green/20 flex items-center justify-center">
-                        <img
-                            src="https://i.postimg.cc/SNdmHY9q/mission_(2).jpg"
-                            alt="ManuDocs Mission"
-                            className="w-full h-full object-contain p-2 md:p-4"
-                            onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextSibling.style.display = 'flex';
-                            }}
-                        />
-                        <div className="hidden w-full h-full flex items-center justify-center text-gray-500">
-                            [ManuDocs Logo]
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* Mission Content */}
                 <div className="space-y-4 md:space-y-6 max-w-5xl mx-auto">

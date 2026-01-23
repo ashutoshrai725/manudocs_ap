@@ -20,23 +20,7 @@ const VisionSection = () => {
                         <div className="w-16 md:w-20 h-1 bg-manu-green mx-auto"></div>
                     </div>
 
-                    {/* Vision Image - Landscape - Smaller on mobile */}
-                    <div className="mb-6 md:mb-10">
-                        <div className="w-full max-w-xl mx-auto h-32 md:h-64 lg:h-80 bg-gradient-to-r from-blue-600/10 to-manu-green/10 rounded-xl md:rounded-2xl overflow-hidden border border-blue-500/20 flex items-center justify-center">
-                            <img
-                                src="https://i.postimg.cc/fTCM1SdN/vision_(2).jpg"
-                                alt="ManuDocs Vision"
-                                className="w-full h-full object-contain p-2 md:p-4"
-                                onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextSibling.style.display = 'flex';
-                                }}
-                            />
-                            <div className="hidden w-full h-full flex items-center justify-center text-gray-500">
-                                [Vision Image]
-                            </div>
-                        </div>
-                    </div>
+
 
                     {/* Vision Content */}
                     <div className="space-y-5 md:space-y-8 max-w-5xl mx-auto">
