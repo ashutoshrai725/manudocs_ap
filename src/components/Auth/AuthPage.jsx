@@ -15,6 +15,7 @@ const AuthPage = ({ onUserAuth }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [session, setSession] = useState(null);
 
     // Form data
@@ -81,9 +82,12 @@ const AuthPage = ({ onUserAuth }) => {
             ...prev,
             [name]: value
         }));
-        // Clear error when user starts typing
+        // Clear error and success message when user starts typing
         if (error) {
             setError('');
+        }
+        if (successMessage) {
+            setSuccessMessage('');
         }
     };
 
@@ -138,6 +142,13 @@ const AuthPage = ({ onUserAuth }) => {
                 });
 
                 if (error) throw error;
+
+                // Show success message
+                setSuccessMessage('Login successful!');
+                setLoading(false);
+
+                // Wait for 1.5 seconds before the auth state change handles navigation
+                return;
             } else {
                 // Signup with custom metadata
                 const { data, error } = await supabase.auth.signUp({
@@ -393,6 +404,13 @@ const AuthPage = ({ onUserAuth }) => {
                             </div>
                         )}
                     </div>
+
+                    {/* Success Message */}
+                    {successMessage && (
+                        <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm" role="alert">
+                            {successMessage}
+                        </div>
+                    )}
 
                     {/* Error Message */}
                     {error && (
